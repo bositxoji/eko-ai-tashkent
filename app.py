@@ -9,207 +9,112 @@ def index():
     <html lang="uz">
     <head>
         <meta charset="UTF-8">
-        <title>Eco-Intelligence 3.0 | Future Portal</title>
+        <title>Neural Eco v3.6 | Ultimate Global Hub</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <style>
-            :root { --neon: #00f2fe; --danger: #ff4b2b; --bg: #030303; --glass: rgba(255,255,255,0.05); }
-            body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+            :root { --neon: #00f2fe; --bg: #020202; --glass: rgba(255,255,255,0.05); }
+            body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; scroll-behavior: smooth; }
+            .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; margin-bottom: 25px; }
             
-            /* Glassmorphism Design */
-            .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; }
-            
-            nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background: rgba(0,0,0,0.8); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--neon); }
-            .lang-btn { background: none; border: 1px solid var(--neon); color: var(--neon); padding: 5px 10px; cursor: pointer; border-radius: 5px; }
+            nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background: rgba(0,0,0,0.9); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--neon); }
+            .lang-btn { background: none; border: 1px solid var(--neon); color: var(--neon); padding: 5px 12px; cursor: pointer; border-radius: 8px; font-weight: bold; margin-left: 8px; transition: 0.3s; }
+            .lang-btn.active { background: var(--neon); color: #000; }
 
             .container { max-width: 1300px; margin: auto; padding: 20px; }
-            h2 { color: var(--neon); text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 10px var(--neon); text-align: center; }
+            h2 { color: var(--neon); text-align: center; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 30px; }
 
-            /* AI Chat Simulation */
-            .ai-container { min-height: 400px; display: flex; flex-direction: column; gap: 15px; }
-            #ai-display { flex-grow: 1; font-size: 16px; line-height: 1.6; color: #e0e0e0; overflow-y: auto; max-height: 400px; padding-right: 10px; border-bottom: 1px solid #333; }
-            .typing { border-right: 2px solid var(--neon); animation: blink 0.7s infinite; }
-            @keyframes blink { 50% { border-color: transparent; } }
+            /* Real-Time City Monitoring */
+            .city-scroll { display: flex; overflow-x: auto; gap: 15px; padding: 15px 0; border-bottom: 1px solid #222; }
+            .city-card { min-width: 160px; text-align: center; border: 1px solid #333; padding: 15px; border-radius: 15px; background: #0a0a0a; }
 
-            /* Grid Layouts */
-            .city-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
-            .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+            /* AI Section */
+            #ai-display { min-height: 250px; background: #050505; border: 1px solid #222; border-radius: 15px; padding: 20px; margin-bottom: 15px; line-height: 1.8; color: #d1d1d1; overflow-y: auto; }
+            textarea { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 15px; border-radius: 12px; box-sizing: border-box; outline: none; }
 
-            /* Game Logic */
-            .trash-item { font-size: 80px; transition: 0.3s; }
-            .bin { padding: 20px; border: 2px solid #333; border-radius: 15px; cursor: pointer; transition: 0.3s; text-align: center; font-weight: bold; }
-            .bin:hover { border-color: var(--neon); background: rgba(0,242,254,0.1); }
-            .bin.correct { border-color: #0f0; background: rgba(0,255,0,0.1); }
-            .bin.wrong { border-color: #f00; background: rgba(255,0,0,0.1); }
+            /* Map & External Sites */
+            .map-container { height: 500px; border-radius: 25px; overflow: hidden; border: 1px solid var(--neon); box-shadow: 0 0 20px rgba(0, 242, 254, 0.2); }
+            .link-card { display: block; background: #111; border: 1px solid #222; padding: 15px; border-radius: 12px; color: #fff; text-decoration: none; margin-bottom: 10px; transition: 0.3s; }
+            .link-card:hover { border-color: var(--neon); background: rgba(0, 242, 254, 0.05); }
 
-            button { background: var(--neon); color: #000; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+            /* Game UI */
+            .bin { border: 2px solid #333; padding: 15px; border-radius: 15px; cursor: pointer; transition: 0.3s; font-weight: bold; text-align: center; }
+            .bin:hover { border-color: var(--neon); background: rgba(0, 242, 254, 0.1); }
+            .btn-neon { background: var(--neon); color: #000; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         </style>
     </head>
     <body>
 
     <nav>
-        <div style="font-weight: bold; color: var(--neon);">NEURAL ECO v3.0</div>
-        <div style="display:flex; gap:10px;">
-            <button class="lang-btn" onclick="setLang('uz')">UZ</button>
-            <button class="lang-btn" onclick="setLang('en')">EN</button>
-            <button class="lang-btn" onclick="setLang('ru')">RU</button>
+        <div style="font-weight: bold; letter-spacing: 1px;">NEURAL ECO <span style="color:var(--neon)">HUB</span></div>
+        <div style="display:flex;">
+            <button class="lang-btn active" onclick="setLang('uz', this)">UZ</button>
+            <button class="lang-btn" onclick="setLang('ru', this)">RU</button>
+            <button class="lang-btn" onclick="setLang('en', this)">EN</button>
         </div>
     </nav>
 
     <div class="container">
         
-        <section>
-            <h2 id="t-monitor">SHAHARLAR MONITORINGI</h2>
-            <div class="city-grid" id="city-list"></div>
+        <section id="monitor-sec">
+            <h2 id="t-mon">Global Monitoring (Real-Time)</h2>
+            <div class="city-scroll" id="city-list"></div>
         </section>
 
-        <section class="game-grid">
+        <div class="glass">
+            <h2 id="t-map">Jonli Shamol va Iqlim Oqimi</h2>
+            <div class="map-container">
+                <iframe src="https://earth.nullschool.net/#current/wind/surface/level/orthographic=69.21,41.26,1200" style="width:100%; height:100%; border:none;"></iframe>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;">
             <div class="glass">
-                <h2 id="t-forecast">2080 PROGNOZ</h2>
+                <h2 id="t-fore">Prognoz 2025-2080</h2>
                 <canvas id="forecastChart"></canvas>
+                <p style="font-size:12px; color:#888; margin-top:15px;" id="t-hist">Siyosiy-tarixiy tahlil: 2045-yilda global uglerod solig'i joriy etilishi prognoz qilinmoqda.</p>
             </div>
             <div class="glass">
-                <h2 id="t-game">ECO MADANIYAT O'YINI</h2>
+                <h2 id="t-eco">Eko Resurslar (Vazifa 2)</h2>
+                <a href="https://earth911.com" target="_blank" class="link-card">🌐 Earth911 - Recycling Directory</a>
+                <a href="https://news.mongabay.com" target="_blank" class="link-card">🍃 Mongabay - Environmental News</a>
+                <a href="https://oceana.org" target="_blank" class="link-card">🌊 Oceana - Protect Global Oceans</a>
+            </div>
+        </div>
+
+        <section class="glass">
+            <h2 id="t-ai">Eco AI Expert (Streaming)</h2>
+            <div id="ai-display">AI tizimi tayyor. Ekologik savolingizni bering...</div>
+            <textarea id="ai-input" rows="3" placeholder="Masalan: Okean ifloslanishining oldini olish yo'llari..."></textarea>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-neon" id="b-send" onclick="runAI()">YUBORISH</button>
+                <button class="btn-neon" style="background:#ff4b2b; color:#fff;" onclick="exportDoc('pdf')">PDF</button>
+                <button class="btn-neon" style="background:#2b55ff; color:#fff;" onclick="exportDoc('word')">WORD</button>
+            </div>
+        </section>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;">
+            <div class="glass" style="border-color: #0033a0;">
+                <h2>🚀 NASA (Vazifa 3)</h2>
+                <p id="t-nasa">NASA Climate Monitoring va kosmik tadqiqotlar bo'limi.</p>
+                <a href="https://www.nasa.gov" target="_blank" class="btn-neon" style="display:block; text-align:center; background:#0033a0; color:#fff;">NASA OFFICIAL</a>
+                <a href="https://climate.nasa.gov" target="_blank" class="link-card" style="margin-top:20px;">NASA Global Climate News</a>
+            </div>
+            <div class="glass">
+                <h2 id="t-game">Eco Game (Ballli)</h2>
                 <div style="text-align:center">
-                    <div id="item-emoji" class="trash-item">🧴</div>
-                    <p id="t-sort">Qaysi idishga tashlaysiz?</p>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-                        <div class="bin" onclick="checkAnswer('plastic')">PLASTIK</div>
-                        <div class="bin" onclick="checkAnswer('organic')">ORGANIK</div>
-                        <div class="bin" onclick="checkAnswer('paper')">QOG'OZ</div>
-                        <div class="bin" onclick="checkAnswer('hazard')">XAVFLI</div>
+                    <div id="game-emoji" style="font-size:60px; margin-bottom:15px;">🧴</div>
+                    <p id="t-sort">Ushbu chiqindini qayerga tashlaysiz?</p>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div class="bin" onclick="checkGame('plastic')">PLASTIK</div>
+                        <div class="bin" onclick="checkGame('organic')">ORGANIK</div>
+                        <div class="bin" onclick="checkGame('paper')">QOG'OZ</div>
+                        <div class="bin" onclick="checkGame('hazard')">XAVFLI</div>
                     </div>
-                    <h3>Ball: <span id="score">0</span></h3>
+                    <h3 style="margin-top:20px;">Score: <span id="game-score" style="color:var(--neon)">0</span></h3>
                 </div>
             </div>
-        </section>
-
-        <section class="glass" style="margin-top:40px">
-            <h2 id="t-ai">ECO AI CHATBOT (STREAMING)</h2>
-            <div class="ai-container">
-                <div id="ai-display"></div>
-                <div style="display:flex; gap:10px">
-                    <textarea id="ai-input" style="flex-grow:1; background:#111; border:1px solid #333; color:#fff; border-radius:10px; padding:10px;" placeholder="Savolingizni bering..."></textarea>
-                    <button onclick="askAI()">YUBORISH</button>
-                </div>
-                <div style="display:flex; gap:10px; margin-top:10px">
-                    <button onclick="download('pdf')" style="background:#ff4b2b; color:#fff;">PDF</button>
-                    <button onclick="download('doc')" style="background:#2b55ff; color:#fff;">WORD</button>
-                </div>
-            </div>
-        </section>
-
+        </div>
     </div>
 
     <script>
-        const GEMINI_KEY = "AIzaSyCl-dBQmgQTJWgA5LR0Fy5Wiq7HLxaHK2Y";
-        let currentLang = 'uz';
-        let score = 0;
-        let currentItem = { emoji: "🧴", type: "plastic" };
-
-        const translations = {
-            uz: { monitor: "SHAHARLAR MONITORINGI", forecast: "2080 PROGNOZ", game: "ECO O'YIN", ai: "ECO AI TAHLIL", sort: "Qaysi idishga tashlaysiz?" },
-            en: { monitor: "CITY MONITORING", forecast: "2080 FORECAST", game: "ECO GAME", ai: "ECO AI ANALYSIS", sort: "Where to dispose?" },
-            ru: { monitor: "МОНИТОРИНГ ГОРОДОВ", forecast: "ПРОГНОЗ 2080", game: "ЭКО ИГРА", ai: "ЭКО ИИ АНАЛИЗ", sort: "Куда выбросить?" }
-        };
-
-        function setLang(l) {
-            currentLang = l;
-            document.getElementById('t-monitor').innerText = translations[l].monitor;
-            document.getElementById('t-forecast').innerText = translations[l].forecast;
-            document.getElementById('t-game').innerText = translations[l].game;
-            document.getElementById('t-ai').innerText = translations[l].ai;
-            document.getElementById('t-sort').innerText = translations[l].sort;
-        }
-
-        // 1. AI Streaming (ChatGPT kabi yozish)
-        async function askAI() {
-            const input = document.getElementById('ai-input').value;
-            const display = document.getElementById('ai-display');
-            display.innerHTML = ""; 
-            
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
-                    method: 'POST',
-                    body: JSON.stringify({contents: [{parts: [{text: `Til: ${currentLang}. Savol: ${input}. Batafsil va ilmiy javob ber.`}]}]})
-                });
-                const data = await res.json();
-                const text = data.candidates[0].content.parts[0].text;
-                
-                // Typing effekti
-                let i = 0;
-                const timer = setInterval(() => {
-                    display.innerHTML += text.charAt(i);
-                    i++;
-                    if (i >= text.length) clearInterval(timer);
-                    display.scrollTop = display.scrollHeight;
-                }, 15);
-            } catch(e) { display.innerText = "Xatolik yuz berdi."; }
-        }
-
-        // 2. To'g'rilangan O'yin mantiqi
-        const trashItems = [
-            {e:"🧴", t:"plastic"}, {e:"🍎", t:"organic"}, {e:"📰", t:"paper"}, 
-            {e:"🔋", t:"hazard"}, {e:"🥤", t:"plastic"}, {e:"🍌", t:"organic"}
-        ];
-
-        function checkAnswer(type) {
-            if(type === currentItem.type) {
-                score += 10;
-                alert("To'g'ri! +10 ball");
-            } else {
-                score -= 5;
-                alert("Xato! Bu " + currentItem.type + " edi.");
-            }
-            document.getElementById('score').innerText = score;
-            currentItem = trashItems[Math.floor(Math.random()*trashItems.length)];
-            document.getElementById('item-emoji').innerText = currentItem.emoji;
-        }
-
-        // 3. Shaharlar (12 ta)
-        const cities = [
-            {n:"Toshkent", lt:41.2, ln:69.2}, {n:"Berlin", lt:52.5, ln:13.4}, {n:"Pekin", lt:39.9, ln:116.4},
-            {n:"Seul", lt:37.5, ln:126.9}, {n:"Tokio", lt:35.6, ln:139.6}, {n:"Moskva", lt:55.7, ln:37.6},
-            {n:"Istanbul", lt:41.0, ln:28.9}, {n:"Qohira", lt:30.0, ln:31.2}, {n:"Rio", lt:-22.9, ln:-43.1},
-            {n:"Bogota", lt:4.7, ln:-74.0}, {n:"Washington", lt:38.8, ln:-77.0}, {n:"Ottawa", lt:45.4, ln:-75.6}
-        ];
-
-        async function loadCities() {
-            const list = document.getElementById('city-list');
-            for(let c of cities) {
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lt}&longitude=${c.ln}&current=temperature_2m`);
-                const data = await res.json();
-                list.innerHTML += `<div class="glass" style="text-align:center"><h4>${c.n}</h4><b style="font-size:24px; color:var(--neon)">${Math.round(data.current.temperature_2m)}°C</b></div>`;
-            }
-        }
-
-        // Chart Init
-        new Chart(document.getElementById('forecastChart'), {
-            type: 'line',
-            data: { labels: ['2025','2040','2060','2080'], datasets: [{label:'Temp Change', data:[1.1, 1.8, 2.6, 3.4], borderColor:'#00f2fe'}] },
-            options: { plugins: { legend: { labels: { color: 'white' } } } }
-        });
-
-        function download(type) {
-            const content = document.getElementById('ai-display').innerText;
-            if(type === 'pdf') {
-                const doc = new jspdf.jsPDF();
-                doc.text(content, 10, 10);
-                doc.save("report.pdf");
-            } else {
-                const blob = new Blob([content], {type: 'application/msword'});
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = "report.doc";
-                link.click();
-            }
-        }
-
-        loadCities();
-    </script>
-    </body>
-    </html>
-    """)
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)

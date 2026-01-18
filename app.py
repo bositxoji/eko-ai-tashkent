@@ -10,106 +10,117 @@ def index():
     <html lang="uz">
     <head>
         <meta charset="UTF-8">
-        <title>Neural Eco v3.7 | Global Portal</title>
+        <title>Neural Eco v4.0 | Advanced Intelligence</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <style>
-            :root { --neon: #00f2fe; --bg: #010101; --glass: rgba(255,255,255,0.03); }
-            body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
-            .glass { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+            :root { --neon: #00f2fe; --bg: #010101; --glass: rgba(255,255,255,0.03); --border: rgba(0, 242, 254, 0.3); }
+            body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; scroll-behavior: smooth; }
+            .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 20px; padding: 25px; margin-bottom: 25px; transition: 0.3s; }
+            .glass:hover { border-color: var(--neon); box-shadow: 0 0 15px var(--border); }
             
-            nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: #000; border-bottom: 1px solid var(--neon); position: sticky; top: 0; z-index: 100; }
-            .lang-btn { background: none; border: 1px solid var(--neon); color: var(--neon); padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-left: 5px; }
+            nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background: rgba(0,0,0,0.9); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--neon); }
+            .lang-btn { background: none; border: 1px solid var(--neon); color: var(--neon); padding: 5px 12px; cursor: pointer; border-radius: 8px; font-weight: bold; margin-left: 10px; }
             .lang-btn.active { background: var(--neon); color: #000; }
 
-            .container { max-width: 1200px; margin: auto; padding: 20px; }
-            h2 { color: var(--neon); text-transform: uppercase; letter-spacing: 2px; text-align: center; }
+            .container { max-width: 1300px; margin: auto; padding: 20px; }
+            h2 { color: var(--neon); text-transform: uppercase; letter-spacing: 3px; text-align: center; margin-bottom: 30px; }
 
-            /* City Scroll */
-            .city-container { display: flex; overflow-x: auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid #222; }
-            .city-card { min-width: 140px; padding: 10px; background: #111; border-radius: 10px; text-align: center; border: 1px solid #333; }
+            /* Grid Layouts */
+            .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; }
+            .city-scroll { display: flex; overflow-x: auto; gap: 15px; padding: 15px 0; border-bottom: 1px solid #222; }
+            .city-card { min-width: 150px; text-align: center; padding: 15px; border-radius: 12px; background: #0a0a0a; border: 1px solid #222; }
 
-            /* Grid Layout */
-            .main-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+            /* Carbon Footprint & Library */
+            .info-card { background: rgba(0,0,0,0.5); border-left: 4px solid var(--neon); padding: 15px; margin-bottom: 10px; border-radius: 0 10px 10px 0; }
+            .article-link { display: block; color: #ddd; text-decoration: none; padding: 12px; border-bottom: 1px solid #333; transition: 0.3s; }
+            .article-link:hover { color: var(--neon); background: rgba(255,255,255,0.05); }
 
-            /* AI Display */
-            #ai-box { min-height: 200px; max-height: 350px; overflow-y: auto; background: #050505; padding: 15px; border-radius: 10px; border: 1px solid #222; font-size: 14px; line-height: 1.6; }
-            
-            /* Buttons */
-            .btn { background: var(--neon); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-            .btn:hover { opacity: 0.8; box-shadow: 0 0 15px var(--neon); }
+            /* AI Section */
+            #ai-out { min-height: 250px; background: #050505; border: 1px solid #333; border-radius: 15px; padding: 20px; margin-bottom: 15px; line-height: 1.8; overflow-y: auto; }
+            textarea { width: 100%; background: #111; border: 1px solid #444; color: #fff; padding: 15px; border-radius: 12px; outline: none; box-sizing: border-box; }
 
-            /* Map */
-            .map-box { height: 400px; border-radius: 15px; overflow: hidden; border: 1px solid var(--neon); margin: 20px 0; }
-            
-            /* Game */
-            .bin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-            .bin { border: 1px solid #444; padding: 10px; border-radius: 10px; cursor: pointer; text-align: center; }
-            .bin:hover { border-color: var(--neon); background: rgba(0,242,254,0.1); }
+            .btn { background: var(--neon); color: #000; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+            .btn-danger { background: #ff4b2b; color: white; }
+            .btn-blue { background: #2b55ff; color: white; }
+
+            /* Map Box */
+            .map-box { height: 450px; border-radius: 20px; overflow: hidden; border: 1px solid var(--neon); margin: 30px 0; }
         </style>
     </head>
     <body>
 
     <nav>
-        <div style="font-weight: bold;">NEURAL ECO <span style="color:var(--neon)">AI</span></div>
+        <div style="font-weight: bold; font-size: 20px;">NEURAL ECO <span style="color:var(--neon)">PRO</span></div>
         <div>
-            <button class="lang-btn active" onclick="setL('uz', this)">UZ</button>
-            <button class="lang-btn" onclick="setL('ru', this)">RU</button>
-            <button class="lang-btn" onclick="setL('en', this)">EN</button>
+            <button class="lang-btn active" onclick="chLang('uz', this)">UZ</button>
+            <button class="lang-btn" onclick="chLang('ru', this)">RU</button>
+            <button class="lang-btn" onclick="chLang('en', this)">EN</button>
         </div>
     </nav>
 
     <div class="container">
-        <h2 id="l-mon">Global Monitoring</h2>
-        <div class="city-container" id="city-list"></div>
+        
+        <section>
+            <h2 id="l-mon">Global City Monitor</h2>
+            <div class="city-scroll" id="city-list"></div>
+        </section>
 
         <div class="map-box">
             <iframe src="https://earth.nullschool.net/#current/wind/surface/level/orthographic=69.21,41.26,1000" style="width:100%; height:100%; border:none;"></iframe>
         </div>
 
-        <div class="main-grid">
+        <div class="grid-3">
             <div class="glass">
-                <h2 id="l-fore">Prognoz 2080</h2>
-                <canvas id="fChart"></canvas>
-            </div>
-            <div class="glass">
-                <h2 id="l-site">Eko Resurslar</h2>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <a href="https://earth911.com" target="_blank" style="color:#aaa; text-decoration:none; padding:10px; border:1px solid #222; border-radius:8px;">🌍 Earth911 Portal</a>
-                    <a href="https://news.mongabay.com" target="_blank" style="color:#aaa; text-decoration:none; padding:10px; border:1px solid #222; border-radius:8px;">🍃 Mongabay News</a>
-                    <a href="https://oceana.org" target="_blank" style="color:#aaa; text-decoration:none; padding:10px; border:1px solid #222; border-radius:8px;">🌊 Oceana Oceans</a>
+                <h2 id="l-carb">Carbon Footprint</h2>
+                <canvas id="carbChart" style="max-height: 200px;"></canvas>
+                <div class="info-card" style="margin-top:20px">
+                    <p style="font-size:14px;" id="l-cinfo">Sizning hududingizda o'rtacha karbon chiqindisi: <b>4.5 tonna/yil</b></p>
                 </div>
             </div>
-        </div>
 
-        <div class="glass" style="margin-top:20px;">
-            <h2 id="l-ai">Eco AI Expert</h2>
-            <div id="ai-box">Tayyor. Savolingizni bering...</div>
-            <textarea id="ai-in" style="width:100%; background:#111; color:#fff; border:1px solid #333; padding:10px; border-radius:10px; margin: 10px 0;" rows="2"></textarea>
-            <div style="display:flex; gap:10px;">
-                <button class="btn" id="l-send" onclick="askAI()">Yuborish</button>
-                <button class="btn" style="background:#ff4b2b; color:#fff;" onclick="exp('pdf')">PDF</button>
-                <button class="btn" style="background:#2b55ff; color:#fff;" onclick="exp('word')">Word</button>
+            <div class="glass">
+                <h2 id="l-lib">Maqolalar Kutubxonasi</h2>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <a href="https://earth911.com" target="_blank" class="article-link">🌍 Global Eko-Risk Monitoring 2026</a>
+                    <a href="https://news.mongabay.com" target="_blank" class="article-link">🍃 O'rmonlar qisqarishi tahlili</a>
+                    <a href="https://oceana.org" target="_blank" class="article-link">🌊 Okeanlardagi plastik xavfi</a>
+                    <a href="#" class="article-link">📑 Iqlim o'zgarishi va iqtisodiy risklar</a>
+                </div>
+            </div>
+
+            <div class="glass">
+                <h2 id="l-fore">2080 Iqlim Prognozi</h2>
+                <canvas id="fChart"></canvas>
             </div>
         </div>
 
-        <div class="main-grid">
-            <div class="glass">
-                <h2>🚀 NASA News</h2>
-                <p style="font-size:13px; color:#888;">Global iqlim monitoringi va kosmos ma'lumotlari.</p>
-                <a href="https://climate.nasa.gov" target="_blank" class="btn" style="display:block; text-align:center; text-decoration:none;">NASA Climate</a>
+        <div class="glass" style="margin-top:30px">
+            <h2 id="l-ai">Eco AI Expert (ChatGPT Mode)</h2>
+            <div id="ai-out">Savolingizni bering...</div>
+            <textarea id="ai-in" rows="3" placeholder="Masalan: Ekologik risklarni qanday kamaytirish mumkin?"></textarea>
+            <div style="display:flex; gap:10px; margin-top:15px">
+                <button class="btn" id="l-send" onclick="askAI()">Yuborish</button>
+                <button class="btn btn-danger" onclick="exp('pdf')">PDF</button>
+                <button class="btn btn-blue" onclick="exp('doc')">Word</button>
+            </div>
+        </div>
+
+        <div class="grid-3">
+            <div class="glass" style="border-color:#0033a0">
+                <h2>🚀 NASA Intelligence</h2>
+                <a href="https://climate.nasa.gov" target="_blank" class="article-link">NASA Global Climate News</a>
+                <a href="https://www.nasa.gov" target="_blank" class="btn" style="display:block; text-align:center; margin-top:10px; background:#0033a0; color:white;">NASA Portali</a>
             </div>
             <div class="glass">
                 <h2 id="l-game">Eco Game</h2>
                 <div style="text-align:center">
-                    <div id="g-emoji" style="font-size:40px;">🧴</div>
-                    <div class="bin-grid">
-                        <div class="bin" onclick="game('plastic')">PLASTIK</div>
-                        <div class="bin" onclick="game('organic')">ORGANIK</div>
-                        <div class="bin" onclick="game('paper')">QOG'OZ</div>
-                        <div class="bin" onclick="game('hazard')">XAVFLI</div>
+                    <div id="g-emoji" style="font-size:50px; margin-bottom:10px;">🧴</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+                        <div style="border:1px solid #444; padding:10px; cursor:pointer" onclick="game('plastic')">PLASTIK</div>
+                        <div style="border:1px solid #444; padding:10px; cursor:pointer" onclick="game('organic')">ORGANIK</div>
                     </div>
-                    <p>Ball: <span id="score" style="color:var(--neon); font-weight:bold;">0</span></p>
+                    <p style="margin-top:15px">Ball: <span id="score" style="color:var(--neon); font-weight:bold">0</span></p>
                 </div>
             </div>
         </div>
@@ -121,57 +132,54 @@ def index():
         let score = 0;
         let item = {e:"🧴", t:"plastic"};
 
-        const txt = {
-            uz: {mon:"Global Monitoring", fore:"Prognoz 2080", site:"Eko Resurslar", ai:"Eco AI Expert", game:"Eco O'yin", send:"Yuborish"},
-            ru: {mon:"Мониторинг", fore:"Прогноз 2080", site:"Эко Ресурсы", ai:"Эко ИИ Эксперт", game:"Эко Игра", send:"Отправить"},
-            en: {mon:"Monitoring", fore:"Forecast 2080", site:"Eco Resources", ai:"Eco AI Expert", game:"Eco Game", send:"Send"}
+        const dic = {
+            uz: {mon:"Global Monitoring", carb:"Karbon Footprint", lib:"Maqolalar Kutubxonasi", fore:"2080 Prognoz", ai:"Eco AI Expert", game:"Eko O'yin", send:"Yuborish"},
+            ru: {mon:"Глобальный Мониторинг", carb:"Углеродный след", lib:"Библиотека статей", fore:"Прогноз 2080", ai:"Эко ИИ Эксперт", game:"Эко Игра", send:"Отправить"},
+            en: {mon:"Global Monitoring", carb:"Carbon Footprint", lib:"Article Library", fore:"2080 Forecast", ai:"Eco AI Expert", game:"Eco Game", send:"Send"}
         };
 
-        function setL(l, b) {
+        function chLang(l, b) {
             lang = l;
             document.querySelectorAll('.lang-btn').forEach(x => x.classList.remove('active'));
             b.classList.add('active');
-            document.getElementById('l-mon').innerText = txt[l].mon;
-            document.getElementById('l-fore').innerText = txt[l].fore;
-            document.getElementById('l-site').innerText = txt[l].site;
-            document.getElementById('l-ai').innerText = txt[l].ai;
-            document.getElementById('l-game').innerText = txt[l].game;
-            document.getElementById('l-send').innerText = txt[l].send;
+            Object.keys(dic[l]).forEach(k => {
+                const el = document.getElementById('l-'+k);
+                if(el) el.innerText = dic[l][k];
+            });
         }
 
         async function askAI() {
             const inp = document.getElementById('ai-in').value;
-            const box = document.getElementById('ai-box');
-            box.innerText = "...";
+            const out = document.getElementById('ai-out');
+            out.innerText = "AI tahlil qilmoqda...";
             try {
                 const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API}`, {
                     method:'POST',
-                    body: JSON.stringify({contents:[{parts:[{text:`Javobni ${lang} tilida yoz: ${inp}`}]}]})
+                    body: JSON.stringify({contents:[{parts:[{text:`Javobni ${lang} tilida, ilmiy va batafsil yoz: ${inp}`}]}]})
                 });
                 const d = await r.json();
                 const s = d.candidates[0].content.parts[0].text;
-                box.innerText = "";
+                out.innerText = "";
                 let i = 0;
                 const t = setInterval(() => {
-                    box.innerText += s.charAt(i); i++;
+                    out.innerText += s.charAt(i); i++;
                     if(i>=s.length) clearInterval(t);
-                    box.scrollTop = box.scrollHeight;
+                    out.scrollTop = out.scrollHeight;
                 }, 10);
-            } catch(e) { box.innerText = "Xato: API ulanmadi."; }
+            } catch(e) { out.innerText = "Xato: API ulanishda muammo. Iltimos, Render-da 'requests' kutubxonasi borligini tekshiring."; }
         }
 
-        const items = [{e:"🧴",t:"plastic"},{e:"🍎",t:"organic"},{e:"📰",t:"paper"},{e:"🔋",t:"hazard"}];
         function game(c) {
-            if(c === item.t) { score+=10; } else { score-=5; }
+            if(c === item.t) score+=10; else score-=5;
             document.getElementById('score').innerText = score;
-            item = items[Math.floor(Math.random()*items.length)];
+            const trash = [{e:"🧴",t:"plastic"},{e:"🍎",t:"organic"},{e:"📰",t:"paper"}];
+            item = trash[Math.floor(Math.random()*trash.length)];
             document.getElementById('g-emoji').innerText = item.e;
         }
 
         const cities = [
             {n:"Toshkent",lt:41.2,ln:69.2},{n:"Berlin",lt:52.5,ln:13.4},{n:"Pekin",lt:39.9,ln:116.4},{n:"Seul",lt:37.5,ln:126.9},
-            {n:"Tokio",lt:35.6,ln:139.6},{n:"Moskva",lt:55.7,ln:37.6},{n:"Istanbul",lt:41.0,ln:28.9},{n:"Qohira",lt:30.0,ln:31.2},
-            {n:"Rio",lt:-22.9,ln:-43.1},{n:"Bogota",lt:4.7,ln:-74.0},{n:"Washington",lt:38.8,ln:-77.0},{n:"Ottawa",lt:45.4,ln:-75.6}
+            {n:"Tokio",lt:35.6,ln:139.6},{n:"Moskva",lt:55.7,ln:37.6},{n:"Istanbul",lt:41.0,ln:28.9},{n:"Rio",lt:-22.9,ln:-43.1}
         ];
 
         async function init() {
@@ -183,13 +191,14 @@ def index():
                     list.innerHTML += `<div class="city-card"><b>${c.n}</b><br><span style="color:var(--neon)">${Math.round(d.current.temperature_2m)}°C</span></div>`;
                 } catch(e) {}
             }
-            new Chart(document.getElementById('fChart'), { type:'line', data:{labels:['2025','2050','2080'], datasets:[{label:'Temp Change', data:[1.2, 2.2, 3.4], borderColor:'#00f2fe'}]}, options:{plugins:{legend:{display:false}}} });
+            new Chart(document.getElementById('fChart'), { type:'line', data:{labels:['2025','2050','2080'], datasets:[{label:'Temp Change', data:[1.1, 2.3, 3.5], borderColor:'#00f2fe'}]}, options:{plugins:{legend:{display:false}}, scales:{y:{ticks:{color:'#fff'}}}} });
+            new Chart(document.getElementById('carbChart'), { type:'doughnut', data:{labels:['Transport','Oziq-ovqat','Energiya'], datasets:[{data:[30,25,45], backgroundColor:['#ff4b2b','#00f2fe','#ffcc00']}]}, options:{plugins:{legend:{position:'bottom', labels:{color:'#fff'}}}} });
         }
 
         function exp(t) {
-            const c = document.getElementById('ai-box').innerText;
-            if(t==='pdf') { const d = new jspdf.jsPDF(); d.text(c, 10, 10); d.save("eco.pdf"); }
-            else { const b = new Blob([c], {type:'application/msword'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download="eco.doc"; a.click(); }
+            const c = document.getElementById('ai-out').innerText;
+            if(t==='pdf') { const d = new jspdf.jsPDF(); d.text(c, 10, 10); d.save("eco_report.pdf"); }
+            else { const b = new Blob([c], {type:'application/msword'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download="report.doc"; a.click(); }
         }
 
         init();

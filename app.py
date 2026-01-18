@@ -1,167 +1,172 @@
 import os
 import requests
 import google.generativeai as genai
-from flask import Flask, render_template_string, request, jsonify
+from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
 # --- ELITA KONFIGURATSIYA ---
-# Siz bergan Gemini API kaliti
+# Sizning Gemini API kalitingiz
 genai.configure(api_key="AIzaSyCl-dBQmgQTJWgA5LR0Fy5Wiq7HLxaHK2Y")
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# Tashqi ekologik ma'lumotlar manbasi
 WAQI_TOKEN = "68f561578e030386d0800b656708306059b02a46"
 
+# --- MULTI-LANGUAGE DICTIONARY ---
+TRANSLATIONS = {
+    'uz': {
+        'title': 'Global Eko-Intellekt',
+        'aqi': 'Havo Sifati', 'temp': 'Harorat', 'hum': 'Namlik', 'pm25': 'Chang (PM2.5)',
+        'ai_analysis': 'GEMINI AI TAHLILI', 'loading': 'Aniqlanmoqda...',
+        'author': 'Muallif', 'supervisor': 'Ilmiy rahbar'
+    },
+    'ru': {
+        'title': 'Глобальный Эко-Интеллект',
+        'aqi': 'Качество воздуха', 'temp': 'Температура', 'hum': 'Влажность', 'pm25': 'Пыль (PM2.5)',
+        'ai_analysis': 'АНАЛИЗ GEMINI AI', 'loading': 'Определение...',
+        'author': 'Автор', 'supervisor': 'Научный руководитель'
+    },
+    'en': {
+        'title': 'Global Eco-Intelligence',
+        'aqi': 'Air Quality', 'temp': 'Temperature', 'hum': 'Humidity', 'pm25': 'Particles (PM2.5)',
+        'ai_analysis': 'GEMINI AI ANALYSIS', 'loading': 'Detecting...',
+        'author': 'Author', 'supervisor': 'Supervisor'
+    }
+}
+
 def get_pro_ai_analysis(city, data, lang):
-    """ Gemini AI orqali chuqurlashtirilgan ekologik tahlil va prognoz """
-    prompt = f"""
-    Sen Global Eco-Intelligence markazining bosh tahlilchisisan. 
-    Loyiha muallifi: Ataxojayev Abdubositxoja.
-    Ma'lumotlar: Shahar: {city}, AQI: {data['aqi']}, Temp: {data['temp']}°C, Namlik: {data['hum']}%, Chang (PM2.5): {data['pm25']}.
-    Topshiriq: 
-    1. Hozirgi holatga professional baho ber.
-    2. Ushbu ma'lumotlar asosida 24 soatlik ekologik prognoz ber.
-    3. Aholi uchun salomatlik tavsiyalarini yoz.
-    Til: {lang}. Javobing professional, aniq va ma'lumotga boy bo'lsin.
-    """
+    """ Gemini AI orqali har bir til uchun alohida chuqur tahlil """
+    prompt = f"As an environmental expert, analyze this for {city}: AQI is {data['aqi']}, Temp {data['temp']}°C, Humidity {data['hum']}%. Give a sharp, professional 2-sentence summary and health advice in {lang} language."
     try:
         response = model.generate_content(prompt)
-        return response.text
+        return response.text.strip()
     except:
-        return "AI tahlil tizimi vaqtincha offline rejimda."
+        return "AI system is calibrating. Please wait."
 
 @app.route('/')
 def home():
-    city = request.args.get('city', 'tashkent')
-    lang = request.args.get('lang', 'uz')
-    
+    # 1. GPS/IP orqali foydalanuvchi shahrini avtomatik aniqlash
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    auto_city = "tashkent"
     try:
-        r = requests.get(f"https://api.waqi.info/feed/{city}/?token={WAQI_TOKEN}", timeout=10).json()
+        # IP orqali shaharni topish (Free GeoAPI)
+        geo_r = requests.get(f"http://ip-api.com/json/{user_ip}", timeout=3).json()
+        if geo_r['status'] == 'success':
+            auto_city = geo_r['city']
+    except: pass
+
+    city = request.args.get('city', auto_city)
+    lang = request.args.get('lang', 'uz')
+    L = TRANSLATIONS.get(lang, TRANSLATIONS['uz'])
+
+    # 2. Havo ma'lumotlarini olish
+    try:
+        r = requests.get(f"https://api.waqi.info/feed/{city}/?token={WAQI_TOKEN}", timeout=7).json()
         if r['status'] == 'ok':
             res = r['data']
             data = {
                 "aqi": res['aqi'],
-                "temp": res['iaqi'].get('t', {}).get('v', 18),
-                "hum": res['iaqi'].get('h', {}).get('v', 40),
-                "pm25": res['iaqi'].get('pm25', {}).get('v', 50),
+                "temp": res['iaqi'].get('t', {}).get('v', 0),
+                "hum": res['iaqi'].get('h', {}).get('v', 0),
+                "pm25": res['iaqi'].get('pm25', {}).get('v', 0),
                 "city": city.upper()
             }
-            ai_analysis = get_pro_ai_analysis(city, data, lang)
-        else:
-            raise Exception("City Not Found")
+            ai_comment = get_pro_ai_analysis(city, data, lang)
+        else: raise Exception("API Error")
     except:
-        data = {"aqi": 45, "temp": 20, "hum": 30, "pm25": 40, "city": city.upper() + " (LOCAL)"}
-        ai_analysis = "Global datchiklar bilan aloqa uzildi. Lokal ma'lumotlar tahlil qilinmoqda."
+        data = {"aqi": "--", "temp": "--", "hum": "--", "pm25": "--", "city": city.upper() + " (NOT FOUND)"}
+        ai_comment = "Error connecting to global stations."
 
-    # --- NEXT-GEN CYBER DESIGN ---
     return render_template_string("""
     <!DOCTYPE html>
     <html lang="{{ lang }}">
     <head>
         <meta charset="UTF-8">
-        <title>Eco-Intelligence World Pro</title>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ L.title }}</title>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            :root { --accent: #00f2fe; --bg: #05070a; --glass: rgba(255, 255, 255, 0.03); }
-            body { background: var(--bg); color: #e2e8f0; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; overflow-x: hidden; }
-            .main-frame { max-width: 1200px; margin: 0 auto; position: relative; }
+            :root { --neon: #00f2fe; --bg: #050505; --card: #111111; }
+            body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+            .container { max-width: 1000px; margin: 0 auto; }
             
-            /* Glassmorphism Header */
-            .header { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; margin-bottom: 30px; }
-            .pro-label { background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); color: #000; padding: 4px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; }
+            /* Navbar */
+            .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+            .lang-switch a { color: #888; text-decoration: none; margin-left: 15px; font-weight: bold; transition: 0.3s; }
+            .lang-switch a.active { color: var(--neon); text-shadow: 0 0 10px var(--neon); }
+
+            /* Main Card */
+            .main-card { background: var(--card); border: 1px solid #222; border-radius: 30px; padding: 40px; position: relative; overflow: hidden; }
+            .main-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: linear-gradient(90deg, transparent, var(--neon), transparent); }
             
-            /* AI Analysis Block */
-            .ai-terminal { background: rgba(0, 242, 254, 0.02); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 24px; padding: 30px; margin-bottom: 30px; position: relative; overflow: hidden; }
-            .ai-terminal::before { content: 'AI CORE PROCESSING'; position: absolute; top: 10px; right: 20px; font-size: 10px; color: var(--accent); opacity: 0.5; }
-            .ai-text { font-size: 17px; line-height: 1.8; color: #cbd5e1; white-space: pre-line; }
+            .city-label { text-transform: uppercase; letter-spacing: 3px; font-size: 14px; color: var(--neon); opacity: 0.8; }
+            .aqi-box { display: flex; align-items: baseline; gap: 20px; margin: 20px 0; }
+            .aqi-num { font-size: 90px; font-weight: 900; line-height: 1; }
+            
+            /* AI Terminal */
+            .ai-box { background: rgba(0, 242, 254, 0.05); border-radius: 20px; padding: 25px; border-left: 5px solid var(--neon); margin: 30px 0; }
+            .ai-box i { color: var(--neon); margin-bottom: 10px; display: block; }
+            
+            /* Grid */
+            .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+            .stat { background: #1a1a1a; padding: 20px; border-radius: 20px; border: 1px solid #222; }
+            .stat i { color: #555; margin-bottom: 10px; }
+            .stat-val { display: block; font-size: 24px; font-weight: bold; }
 
-            /* Metrics Grid */
-            .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
-            .metric-card { background: var(--glass); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 30px; transition: 0.4s; }
-            .metric-card:hover { border-color: var(--accent); transform: translateY(-5px); }
-            .val { font-size: 48px; font-weight: 800; color: #fff; margin: 15px 0; display: block; }
-            .unit { font-size: 16px; opacity: 0.5; font-weight: 300; }
-
-            /* Interactive Elements */
-            .btn-group { display: flex; gap: 10px; }
-            .lang-link { color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); font-size: 13px; }
-            .lang-link.active { background: var(--accent); color: #000; font-weight: bold; }
-
-            .footer { margin-top: 50px; padding: 30px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; font-size: 13px; opacity: 0.6; }
+            .footer { margin-top: 50px; display: flex; justify-content: space-between; font-size: 12px; color: #444; }
         </style>
     </head>
     <body>
-        <div class="main-frame">
-            <div class="header">
-                <div>
-                    <h1 style="margin:0; font-size: 24px;">{{ data.city }} <span style="font-weight: 300;">Environmental Intelligence</span></h1>
-                    <span class="pro-label">V5.0 PRO OPERATIONAL</span>
-                </div>
-                <div class="btn-group">
-                    <a href="/?lang=uz&city={{ data.city|lower }}" class="lang-link {% if lang=='uz' %}active{% endif %}">O'ZBEK</a>
-                    <a href="/?lang=en&city={{ data.city|lower }}" class="lang-link {% if lang=='en' %}active{% endif %}">ENGLISH</a>
+        <div class="container">
+            <div class="nav">
+                <div style="font-weight: 800; font-size: 20px; letter-spacing: -1px;">GLOBAL <span style="color:var(--neon)">ECO-AI</span></div>
+                <div class="lang-switch">
+                    <a href="/?lang=uz&city={{ data.city|lower }}" class="{% if lang=='uz' %}active{% endif %}">UZ</a>
+                    <a href="/?lang=ru&city={{ data.city|lower }}" class="{% if lang=='ru' %}active{% endif %}">RU</a>
+                    <a href="/?lang=en&city={{ data.city|lower }}" class="{% if lang=='en' %}active{% endif %}">EN</a>
                 </div>
             </div>
 
-            <div class="ai-terminal">
-                <h3 style="color: var(--accent); margin-top: 0;"><i class="fas fa-brain"></i> GEMINI AI PROFESSIONAL ANALYSIS</h3>
-                <div class="ai-text">{{ ai_analysis }}</div>
-            </div>
+            <div class="main-card">
+                <span class="city-label"><i class="fas fa-location-dot"></i> {{ data.city }}</span>
+                <div class="aqi-box">
+                    <span class="aqi-num">{{ data.aqi }}</span>
+                    <span style="font-size: 20px; opacity: 0.5;">{{ L.aqi }}</span>
+                </div>
 
-            <div class="metrics">
-                <div class="metric-card">
-                    <span style="color: var(--accent); text-transform: uppercase; font-size: 12px; font-weight: bold; letter-spacing: 1px;">Air Quality Index</span>
-                    <span class="val">{{ data.aqi }} <span class="unit">AQI</span></span>
-                    <canvas id="aqiChart" height="80"></canvas>
+                <div class="ai-box">
+                    <i class="fas fa-robot"></i>
+                    <strong>{{ L.ai_analysis }}:</strong><br>
+                    <p style="font-style: italic; font-size: 18px; margin-top: 10px;">"{{ ai_comment }}"</p>
                 </div>
-                <div class="metric-card">
-                    <span style="color: #ff7e5f; text-transform: uppercase; font-size: 12px; font-weight: bold; letter-spacing: 1px;">Atmospheric Temp</span>
-                    <span class="val">{{ data.temp }} <span class="unit">°C</span></span>
-                    <p style="margin:0; opacity: 0.6;">Humidity: {{ data.hum }}%</p>
-                </div>
-                <div class="metric-card">
-                    <span style="color: #feb47b; text-transform: uppercase; font-size: 12px; font-weight: bold; letter-spacing: 1px;">Particulate Matter</span>
-                    <span class="val">{{ data.pm25 }} <span class="unit">mg/m³</span></span>
-                    <p style="margin:0; opacity: 0.6;">PM2.5 Sensor Status: Active</p>
+
+                <div class="grid">
+                    <div class="stat">
+                        <i class="fas fa-temperature-high"></i>
+                        <span style="display:block; font-size:12px; opacity:0.6;">{{ L.temp }}</span>
+                        <span class="stat-val">{{ data.temp }}°C</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-droplet"></i>
+                        <span style="display:block; font-size:12px; opacity:0.6;">{{ L.hum }}</span>
+                        <span class="stat-val">{{ data.hum }}%</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-wind"></i>
+                        <span style="display:block; font-size:12px; opacity:0.6;">{{ L.pm25 }}</span>
+                        <span class="stat-val">{{ data.pm25 }}</span>
+                    </div>
                 </div>
             </div>
 
             <div class="footer">
-                <div>
-                    DEVELOPER: <b>Ataxojayev Abdubositxoja</b><br>
-                    SUPERVISOR: <b>Egamberdiev E.</b>
-                </div>
-                <div style="text-align: right;">
-                    ENGINE: <b>Google Gemini 1.5 Pro</b><br>
-                    STATUS: <span style="color: #00ff00;">ONLINE SYNC</span>
-                </div>
+                <div>{{ L.author }}: <b>Ataxojayev Abdubositxoja</b></div>
+                <div>{{ L.supervisor }}: <b>Egamberdiev E.</b></div>
             </div>
         </div>
-
-        <script>
-            const ctx = document.getElementById('aqiChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['', '', '', '', ''],
-                    datasets: [{
-                        data: [{{ data.aqi-10 }}, {{ data.aqi-5 }}, {{ data.aqi+5 }}, {{ data.aqi-2 }}, {{ data.aqi }}],
-                        borderColor: '#00f2fe',
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        fill: true,
-                        backgroundColor: 'rgba(0, 242, 254, 0.05)',
-                        tension: 0.4
-                    }]
-                },
-                options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
-            });
-        </script>
     </body>
     </html>
-    """, data=data, ai_analysis=ai_analysis, lang=lang)
+    """, data=data, ai_comment=ai_comment, lang=lang, L=L)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))

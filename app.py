@@ -5,74 +5,58 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Shaharlar va ularning xalqaro stansiya ID-lari (aniqlik uchun)
+# O'zbekiston shaharlari uchun aniq stansiya nomlari
 CITIES = {
-    "tashkent": "Tashkent",
-    "samarkand": "Samarkand",
-    "bukhara": "Bukhara",
-    "namangan": "Namangan",
-    "andijan": "Andijon",
-    "nukus": "Nukus"
+    "uzbekistan/tashkent/us-embassy": "Toshkent",
+    "uzbekistan/samarkand": "Samarqand",
+    "uzbekistan/bukhara": "Buxoro",
+    "uzbekistan/namangan": "Namangan",
+    "uzbekistan/andijan": "Andijon",
+    "uzbekistan/nukus": "Nukus"
 }
 
-def get_ai_analysis(aqi, temp, pm25):
-    """ Haqiqiy AI mantiqiy tahlili """
-    analysis = {
-        "status": "",
-        "color": "",
-        "advice": "",
-        "icon": ""
-    }
-    
-    # AQI va PM2.5 asosida tahlil
+def get_ai_logic(aqi):
+    """ AQI darajasiga qarab AI tahlili va dizayn parametrlarini qaytaradi """
     if aqi <= 50:
-        analysis.update({"status": "A'lo", "color": "#00b894", "icon": "fa-smile-beam", 
-                        "advice": "AI Xulosasi: Havo ideal darajada toza. Bugun o'pka uchun haqiqiy bayram!"})
+        return {"status": "A'lo", "color": "#00b894", "advice": "AI: Havo juda toza! Ochiq havoda mashg'ulotlar uchun ajoyib vaqt."}
     elif aqi <= 100:
-        analysis.update({"status": "O'rtacha", "color": "#fdcb6e", "icon": "fa-meh", 
-                        "advice": "AI Xulosasi: Chang miqdori biroz oshgan. Allergiyasi borlar ehtiyot bo'lishi lozim."})
+        return {"status": "O'rtacha", "color": "#fdcb6e", "advice": "AI: Havo sifati qoniqarli. Sezgir insonlar ehtiyot bo'lishi kerak."}
     elif aqi <= 150:
-        analysis.update({"status": "Zararli", "color": "#e17055", "icon": "fa-mask", 
-                        "advice": "AI Xulosasi: Havo sifati pasaygan. Ko'chada uzoq qolish tavsiya etilmaydi."})
+        return {"status": "Nosog'lom", "color": "#e17055", "advice": "AI: Havo tarkibi buzilgan. Ko'chada uzoq vaqt qolish tavsiya etilmaydi."}
     else:
-        analysis.update({"status": "Xavfli", "color": "#d63031", "icon": "fa-biohazard", 
-                        "advice": "AI OGOHLANTIRISHI: Havo o'ta zaharli! Darhol niqob taqing va yopiq binoda qoling."})
-        
-    # Harorat bo'yicha qo'shimcha AI mantiq
-    if temp < 5:
-        analysis["advice"] += " Shuningdek, havo sovuq, issiq kiyinishni unutmang."
-        
-    return analysis
+        return {"status": "Xavfli", "color": "#d63031", "advice": "AI OGOHLANTIRISHI: Havo o'ta zaharli! Darhol himoya niqobini taqing."}
 
 @app.route('/')
 def home():
-    city_code = request.args.get('city', 'tashkent')
-    token = "demo" # Real loyihada waqi.info'dan shaxsiy token olish tavsiya etiladi
-    url = f"https://api.waqi.info/feed/{city_code}/?token={token}"
+    city_path = request.args.get('city', 'uzbekistan/tashkent/us-embassy')
+    # Yangilangan API kalit (shaxsiy va barqaror)
+    token = "68f561578e030386d0800b656708306059b02a46" 
+    url = f"https://api.waqi.info/feed/{city_path}/?token={token}"
     
     try:
-        r = requests.get(url).json()
-        if r['status'] == 'ok':
-            raw_data = r['data']
-            aqi = raw_data.get('aqi', 0)
-            iaqi = raw_data.get('iaqi', {})
+        response = requests.get(url).json()
+        if response['status'] == 'ok':
+            res_data = response['data']
+            aqi = res_data.get('aqi', 0)
+            iaqi = res_data.get('iaqi', {})
             
-            # Parametrlarni olish
-            temp = iaqi.get('t', {}).get('v', 0)
+            # Parametrlarni olish (Xatolardan himoyalangan holda)
+            temp = iaqi.get('t', {}).get('v', "Noma'lum")
             pm25 = iaqi.get('pm25', {}).get('v', 0)
             wind = iaqi.get('w', {}).get('v', 0)
-            humid = iaqi.get('h', {}).get('v', 0)
             
-            ai = get_ai_analysis(aqi, temp, pm25)
+            ai_data = get_ai_logic(aqi)
             
-            data = {
-                "aqi": aqi, "temp": temp, "pm25": pm25, "wind": wind, "humid": humid,
-                "ai": ai, "city": CITIES.get(city_code), "time": datetime.now().strftime("%H:%M")
+            display_data = {
+                "aqi": aqi, "temp": temp, "pm25": pm25, "wind": wind,
+                "status": ai_data['status'], "color": ai_data['color'], "advice": ai_data['advice'],
+                "city_name": CITIES.get(city_path),
+                "time": datetime.now().strftime("%H:%M:%S")
             }
         else:
-            return "API xatosi: Ma'lumot olib bo'lmadi. Tokenni tekshiring."
+            return "API ulanishida xatolik yuz berdi. Iltimos, sahifani yangilang."
     except Exception as e:
-        return f"Tizim xatosi: {str(e)}"
+        return f"Tizim xatosi: {e}"
 
     html_template = """
     <!DOCTYPE html>
@@ -80,75 +64,56 @@ def home():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Global AI Eco Monitoring</title>
+        <title>Professional AI Eco System</title>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
         <style>
-            :root { --main-color: {{ data.ai.color }}; }
-            body { background: #f4f7f6; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; color: #2d3436; }
-            .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 30px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.05); position: relative; }
-            
-            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-            .city-picker { padding: 12px 20px; border-radius: 15px; border: 2px solid #eee; font-weight: 600; cursor: pointer; outline: none; }
-            
-            .main-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
-            .card { background: #fff; border: 1px solid #f0f0f0; padding: 25px; border-radius: 20px; text-align: center; transition: 0.3s; }
-            .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-            .card i { font-size: 24px; color: var(--main-color); margin-bottom: 15px; }
-            .val { font-size: 36px; font-weight: 800; display: block; }
-            .unit { font-size: 14px; color: #b2bec3; font-weight: 600; }
-
-            .ai-section { background: #f9fafb; padding: 30px; border-radius: 25px; border-left: 10px solid var(--main-color); margin-bottom: 40px; }
-            .ai-header { display: flex; align-items: center; gap: 15px; font-size: 20px; font-weight: 700; margin-bottom: 15px; }
-            
-            .chart-box { background: #fff; padding: 20px; border-radius: 20px; border: 1px solid #f0f0f0; margin-bottom: 80px; height: 300px; }
-            
-            .source-tag { font-size: 12px; color: #bdc3c7; margin-top: 10px; }
-            .authors { position: absolute; bottom: 20px; right: 40px; text-align: right; font-size: 13px; line-height: 1.6; color: #636e72; }
-            .authors b { color: #2d3436; }
+            body { font-family: 'Inter', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; color: #333; }
+            .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 25px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative; }
+            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+            .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+            .card { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 20px; text-align: center; }
+            .val { font-size: 32px; font-weight: 800; color: {{ data.color }}; }
+            .ai-box { background: #f8f9fa; border-left: 8px solid {{ data.color }}; padding: 20px; border-radius: 15px; margin-bottom: 30px; font-size: 17px; }
+            .chart-box { height: 300px; margin-bottom: 50px; }
+            .authors { border-top: 1px solid #eee; padding-top: 20px; text-align: right; font-size: 13px; color: #777; line-height: 1.6; }
+            select { padding: 10px 20px; border-radius: 12px; border: 1px solid #ddd; font-weight: bold; }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
                 <div>
-                    <h1 style="margin:0; font-size: 28px;">Global AI Eco System</h1>
-                    <div class="source-tag">Manba: World Air Quality Index (WAQI) | {{ data.time }}</div>
+                    <h1 style="margin:0">Eko-AI Monitoring</h1>
+                    <small>Real-vaqt tahlili | {{ data.time }}</small>
                 </div>
                 <form action="/" method="get">
-                    <select name="city" class="city-picker" onchange="this.form.submit()">
-                        {% for code, name in cities.items() %}
-                        <option value="{{ code }}" {% if code == current_city %}selected{% endif %}>{{ name }}</option>
+                    <select name="city" onchange="this.form.submit()">
+                        {% for path, name in cities.items() %}
+                        <option value="{{ path }}" {% if path == current_city %}selected{% endif %}>{{ name }}</option>
                         {% endfor %}
                     </select>
                 </form>
             </div>
 
-            <div class="main-grid">
+            <div class="grid">
                 <div class="card">
-                    <i class="fas fa-wind"></i>
-                    <span class="unit">AQI INDEX</span>
-                    <span class="val" style="color: var(--main-color)">{{ data.aqi }}</span>
-                    <small style="font-weight: 700; color: var(--main-color)">{{ data.ai.status }}</small>
+                    <div style="font-size:12px; color:#999">AQI INDEX ({{ data.city_name }})</div>
+                    <div class="val">{{ data.aqi }}</div>
+                    <div style="font-weight:700; color:{{ data.color }}">{{ data.status }}</div>
                 </div>
                 <div class="card">
-                    <i class="fas fa-thermometer-half"></i>
-                    <span class="unit">HARORAT</span>
-                    <span class="val">{{ data.temp }}°C</span>
+                    <div style="font-size:12px; color:#999">HARORAT</div>
+                    <div class="val" style="color:#2d3436">{{ data.temp }}°C</div>
                 </div>
                 <div class="card">
-                    <i class="fas fa-smog"></i>
-                    <span class="unit">PM2.5 CHANG</span>
-                    <span class="val">{{ data.pm25 }}</span>
+                    <div style="font-size:12px; color:#999">CHANG (PM2.5)</div>
+                    <div class="val" style="color:#2d3436">{{ data.pm25 }}</div>
                 </div>
             </div>
 
-            <div class="ai-section">
-                <div class="ai-header">
-                    <i class="fas {{ data.ai.icon }}" style="color: var(--main-color)"></i>
-                    AI Analitik Tahlili
-                </div>
-                <p style="margin:0; line-height: 1.6; font-size: 16px;">{{ data.ai.advice }}</p>
+            <div class="ai-box">
+                <i class="fas fa-robot"></i> <b>AI Tahlili:</b> {{ data.advice }}
             </div>
 
             <div class="chart-box">
@@ -166,26 +131,21 @@ def home():
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['AQI', 'Temp (°C)', 'Chang (PM2.5)', 'Namlik (%)', 'Shamol (m/s)'],
+                    labels: ['Havo Sifati', 'Harorat', 'PM2.5 Chang'],
                     datasets: [{
-                        label: 'Hozirgi ko\'rsatkichlar ({{ data.city }})',
-                        data: [{{ data.aqi }}, {{ data.temp }}, {{ data.pm25 }}, {{ data.humid }}, {{ data.wind }}],
-                        backgroundColor: ['{{ data.ai.color }}', '#0984e3', '#6c5ce7', '#00cec9', '#fab1a0'],
+                        label: 'Ko\'rsatkichlar',
+                        data: [{{ data.aqi }}, {{ data.temp if data.temp != "Noma'lum" else 0 }}, {{ data.pm25 }}],
+                        backgroundColor: ['{{ data.color }}', '#3498db', '#9b59b6'],
                         borderRadius: 10
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, grid: { display: false } } }
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
         </script>
     </body>
     </html>
     """
-    return render_template_string(html_template, data=data, cities=CITIES, current_city=city_code)
+    return render_template_string(html_template, data=display_data, cities=CITIES, current_city=city_path)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

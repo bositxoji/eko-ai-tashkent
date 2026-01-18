@@ -3,5 +3,4 @@ requests
 google-generativeai
 gunicorn
 python-dotenv
-urllib3
 certifi

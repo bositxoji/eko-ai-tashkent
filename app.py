@@ -1,91 +1,282 @@
 from flask import Flask, render_template_string
 import requests
 import os
+from datetime import datetime
 
 app = Flask(__name__)
 
-def get_eco_status(city="Tashkent"):
-    # Dunyo havo sifati API-si (demo token bilan)
-    token = "demo"
+# --- PROFESSIONAL AI TAHLIL QISMI ---
+def analyze_data(data):
+    try:
+        aqi = data.get('aqi', 0)
+        iaqi = data.get('iaqi', {})
+        
+        # Qo'shimcha parametrlar (agar API bersa)
+        pm25 = iaqi.get('pm25', {}).get('v', 0)
+        temp = iaqi.get('t', {}).get('v', 0)
+        wind = iaqi.get('w', {}).get('v', 0)
+        
+        # 1. Asosiy Status va Rang
+        if aqi <= 50:
+            status = "A'lo Darajada"
+            color = "#00e676" # Yorqin yashil
+            bg_gradient = "linear-gradient(135deg, #11998e, #38ef7d)"
+        elif aqi <= 100:
+            status = "O'rtacha"
+            color = "#ffd600" # Sariq
+            bg_gradient = "linear-gradient(135deg, #fce38a, #f38181)"
+        elif aqi <= 150:
+            status = "Nosog'lom (Sezgir guruhlar uchun)"
+            color = "#ff9100" # Zarg'aldoq
+            bg_gradient = "linear-gradient(135deg, #f46b45, #eea849)"
+        else:
+            status = "Xavfli"
+            color = "#ff1744" # Qizil
+            bg_gradient = "linear-gradient(135deg, #cb2d3e, #ef473a)"
+
+        # 2. Smart AI Maslahatchi (Mantiqiy zanjir)
+        advice = []
+        
+        # Havo bo'yicha
+        if aqi > 100:
+            advice.append("⚠️ Havo tarkibida zararli moddalar ortgan. Niqob taqish tavsiya etiladi.")
+        else:
+            advice.append("✅ Havo toza, xonalarni shamollatish uchun ajoyib vaqt.")
+            
+        # Harorat va Shamol bo'yicha (Qo'shimcha intellekt)
+        if temp < 5:
+            advice.append("❄️ Tashqarida sovuq. Issiq kiyining.")
+        elif temp > 30:
+            advice.append("☀️ Kun issiq. Ko'proq suv iching va quyoshda ko'p yurmang.")
+            
+        if wind > 10:
+            advice.append("💨 Kuchli shamol kuzatilmoqda. Chang ko'tarilishi mumkin, ehtiyot bo'ling.")
+
+        return {
+            "aqi": aqi,
+            "status": status,
+            "color": color,
+            "bg": bg_gradient,
+            "pm25": pm25,
+            "temp": temp,
+            "wind": wind,
+            "advice": " ".join(advice),
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+        }
+    except Exception as e:
+        return None
+
+def get_full_data(city="Tashkent"):
+    token = "demo" # Agar shaxsiy tokeningiz bo'lsa, shu yerga qo'ying
     url = f"https://api.waqi.info/feed/{city}/?token={token}"
-    
     try:
         r = requests.get(url).json()
         if r['status'] == 'ok':
-            aqi = r['data']['aqi']
-            
-            # AI Mantiqiy Tahlili (Ranglar va Tavsiyalar)
-            if aqi <= 50:
-                return aqi, "A’lo ✅", "#2ecc71", "AI tavsiyasi: Havo juda toza! Tashqarida sayr qilish, yugurish va derazalarni ochib qo'yish uchun ajoyib vaqt. 🏃‍♂️"
-            elif aqi <= 100:
-                return aqi, "Qoniqarli ⚠️", "#f1c40f", "AI tavsiyasi: Havo holati o'rtacha. Sezgir odamlar (allergiya borlar) uzoq vaqt ko'chada qolmagani ma'qul. 😷"
-            elif aqi <= 150:
-                return aqi, "Nosog'lom 🟠", "#e67e22", "AI ogohlantirishi: Havo tarkibi buzilmoqda. Yosh bolalar va keksalar ko'chaga chiqishni kamaytirishi kerak."
-            else:
-                return aqi, "Xavfli 🚨", "#e74c3c", "AI favqulodda ogohlantirishi: Havo o'ta ifloslangan! Niqob taqing, derazalarni yoping va uyda qoling. 🚨"
-        
-        return 0, "Noma'lum", "#34495e", "Hozirda ma'lumot olish imkonsiz."
-    except Exception as e:
-        return 0, "Xato", "#34495e", f"Tizimda xato yuz berdi: {str(e)}"
+            return analyze_data(r['data'])
+        return None
+    except:
+        return None
 
 @app.route('/')
 def home():
-    aqi_val, status_text, color_code, advice_text = get_eco_status("Tashkent")
+    data = get_full_data("Tashkent")
     
-    # HTML shablon (Google SEO va Mobile Design bilan)
+    if not data:
+        return "Ma'lumot olishda xatolik. Keyinroq urinib ko'ring.", 500
+
+    # HTML TEMPLATE - PROFESSIONAL DASHBOARD
     html_template = """
     <!DOCTYPE html>
     <html lang="uz">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
-        <title>Eko-AI | Toshkent Havo Sifati Monitoringi</title>
-        <meta name="description" content="Toshkent shahri uchun real vaqtda ishlovchi sun'iy intellekt (AI) Eko-monitoring tizimi. Havo sifati, AQI darajasi va salomatlik bo'yicha tavsiyalar.">
-        <meta name="keywords" content="eko-ai, eko ai, havo toshkent, aqi uzbekistan, havo monitoringi, eko monitoring, toshkent havo sifati">
-        <meta name="author" content="Eko-AI Team">
+        <title>Eko-AI Pro Dashboard</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         
         <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-            .card { background: white; padding: 40px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 400px; transition: transform 0.3s ease; }
-            .card:hover { transform: translateY(-5px); }
-            h1 { color: #2c3e50; margin-bottom: 5px; font-size: 28px; }
-            .location { color: #7f8c8d; font-size: 0.9rem; margin-bottom: 25px; display: block; text-transform: uppercase; letter-spacing: 1px; }
-            .circle { width: 150px; height: 150px; border-radius: 50%; border: 15px solid {{color}}; margin: 0 auto 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-            .aqi-value { font-size: 48px; font-weight: bold; color: {{color}}; line-height: 1; }
-            .aqi-label { font-size: 14px; color: #95a5a6; margin-top: 5px; }
-            .status { font-size: 24px; font-weight: 700; color: {{color}}; margin-bottom: 20px; }
-            .advice-box { background: #f8f9fa; padding: 20px; border-radius: 15px; border-left: 5px solid {{color}}; text-align: left; font-size: 0.95rem; color: #555; line-height: 1.6; margin-bottom: 30px; }
-            .btn { background: {{color}}; color: white; border: none; padding: 15px 30px; border-radius: 15px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: opacity 0.3s; }
-            .btn:hover { opacity: 0.85; }
-            .footer { margin-top: 25px; font-size: 0.8rem; color: #bdc3c7; }
+            :root {
+                --glass-bg: rgba(255, 255, 255, 0.25);
+                --glass-border: 1px solid rgba(255, 255, 255, 0.18);
+                --text-color: #2d3436;
+            }
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                background: {{ data.bg }};
+                background-size: 400% 400%;
+                animation: gradient 15s ease infinite;
+                margin: 0;
+                min-height: 100vh;
+                color: var(--text-color);
+                display: flex;
+                justify-content: center;
+                padding: 20px;
+            }
+            @keyframes gradient {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+            
+            .dashboard {
+                background: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(20px);
+                border-radius: 30px;
+                padding: 30px;
+                width: 100%;
+                max-width: 800px;
+                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            }
+            
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 30px;
+                border-bottom: 2px solid rgba(0,0,0,0.05);
+                padding-bottom: 20px;
+            }
+            .header h1 { margin: 0; font-size: 24px; color: #2d3436; }
+            .badge { background: #2d3436; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+            
+            /* Asosiy ko'rsatkichlar */
+            .main-stats {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+            .stat-card {
+                background: white;
+                padding: 20px;
+                border-radius: 20px;
+                text-align: center;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+                transition: transform 0.3s;
+            }
+            .stat-card:hover { transform: translateY(-5px); }
+            
+            .big-number { font-size: 48px; font-weight: bold; color: {{ data.color }}; }
+            .label { color: #636e72; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+            
+            /* AI Section */
+            .ai-box {
+                background: #f1f2f6;
+                padding: 25px;
+                border-radius: 20px;
+                border-left: 6px solid {{ data.color }};
+                margin-bottom: 30px;
+            }
+            .ai-title { font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+            
+            /* Chart Container */
+            .chart-container {
+                background: white;
+                padding: 20px;
+                border-radius: 20px;
+                height: 250px;
+                margin-bottom: 20px;
+            }
+
+            .btn-refresh {
+                width: 100%;
+                padding: 15px;
+                background: #2d3436;
+                color: white;
+                border: none;
+                border-radius: 15px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+            .btn-refresh:hover { background: #000; }
         </style>
     </head>
     <body>
-        <div class="card">
-            <h1>Eko-AI Monitoring</h1>
-            <span class="location">Toshkent, O'zbekiston</span>
-            
-            <div class="circle">
-                <div class="aqi-value">{{aqi}}</div>
-                <div class="aqi-label">AQI INDEX</div>
+        <div class="dashboard">
+            <div class="header">
+                <div>
+                    <h1>Toshkent AI Monitoring</h1>
+                    <small>{{ data.date }}</small>
+                </div>
+                <span class="badge">PRO VERSION v2.1</span>
             </div>
-            
-            <div class="status">{{status}}</div>
-            
-            <div class="advice-box">
-                <strong>💡 AI Xulosasi:</strong><br>
-                {{advice}}
+
+            <div class="main-stats">
+                <div class="stat-card">
+                    <div class="label">Havo Sifati (AQI)</div>
+                    <div class="big-number">{{ data.aqi }}</div>
+                    <div style="color: {{ data.color }}; font-weight: bold;">{{ data.status }}</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="label">Harorat</div>
+                    <div class="big-number">{{ data.temp }}°C</div>
+                    <div class="label">Havo harorati</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="label">Mayda Chang (PM2.5)</div>
+                    <div class="big-number">{{ data.pm25 }}</div>
+                    <div class="label">µg/m³</div>
+                </div>
             </div>
-            
-            <button class="btn" onclick="location.reload()">🔄 Yangilash</button>
-            
-            <div class="footer">Eko-AI Tizimi v2.0 | Real-vaqt rejimi</div>
+
+            <div class="ai-box">
+                <div class="ai-title">
+                    <i class="fas fa-robot"></i> Sun'iy Intellekt Tahlili:
+                </div>
+                {{ data.advice }}
+            </div>
+
+            <div class="chart-container">
+                <canvas id="airChart"></canvas>
+            </div>
+
+            <button class="btn-refresh" onclick="location.reload()">
+                <i class="fas fa-sync-alt"></i> Tizimni Yangilash
+            </button>
         </div>
+
+        <script>
+            // Grafik chizish qismi
+            const ctx = document.getElementById('airChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['AQI (Havo)', 'PM2.5 (Chang)', 'Shamol (m/s)', 'Harorat (C)'],
+                    datasets: [{
+                        label: 'Eko Ko\'rsatkichlar',
+                        data: [{{ data.aqi }}, {{ data.pm25 }}, {{ data.wind }}, {{ data.temp }}],
+                        backgroundColor: [
+                            '{{ data.color }}',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(255, 159, 64, 0.6)'
+                        ],
+                        borderColor: [
+                            '{{ data.color }}',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        </script>
     </body>
     </html>
     """
-    return render_template_string(html_template, aqi=aqi_val, status=status_text, color=color_code, advice=advice_text)
+    return render_template_string(html_template, data=data)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

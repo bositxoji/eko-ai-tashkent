@@ -9,204 +9,203 @@ def index():
     <html lang="uz">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Eco AI | Global Intelligence Portal</title>
+        <title>Eco-Intelligence 3.0 | Future Portal</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <style>
-            :root { --neon: #00f2fe; --bg: #050505; --card: #111; }
-            body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; scroll-behavior: smooth; }
+            :root { --neon: #00f2fe; --danger: #ff4b2b; --bg: #030303; --glass: rgba(255,255,255,0.05); }
+            body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
             
-            /* Navigatsiya */
-            nav { background: rgba(17,17,17,0.95); padding: 15px; display: flex; justify-content: center; gap: 20px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--neon); }
-            nav a { color: #fff; text-decoration: none; font-size: 12px; font-weight: bold; letter-spacing: 1px; transition: 0.3s; }
-            nav a:hover { color: var(--neon); }
+            /* Glassmorphism Design */
+            .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; }
+            
+            nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background: rgba(0,0,0,0.8); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--neon); }
+            .lang-btn { background: none; border: 1px solid var(--neon); color: var(--neon); padding: 5px 10px; cursor: pointer; border-radius: 5px; }
 
-            .container { max-width: 1200px; margin: auto; padding: 20px; }
-            section { padding: 60px 0; border-bottom: 1px solid #222; }
-            h2 { color: var(--neon); text-align: center; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 40px; }
+            .container { max-width: 1300px; margin: auto; padding: 20px; }
+            h2 { color: var(--neon); text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 10px var(--neon); text-align: center; }
 
-            /* 1-Vazifa: Shaharlar Monitoringi */
-            .city-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-            .city-card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #222; text-align: center; }
-            .city-card h4 { margin: 0; color: var(--neon); }
-            .city-temp { font-size: 28px; font-weight: bold; margin: 10px 0; }
+            /* AI Chat Simulation */
+            .ai-container { min-height: 400px; display: flex; flex-direction: column; gap: 15px; }
+            #ai-display { flex-grow: 1; font-size: 16px; line-height: 1.6; color: #e0e0e0; overflow-y: auto; max-height: 400px; padding-right: 10px; border-bottom: 1px solid #333; }
+            .typing { border-right: 2px solid var(--neon); animation: blink 0.7s infinite; }
+            @keyframes blink { 50% { border-color: transparent; } }
 
-            /* Futprint va Prognoz */
-            .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-            .info-box { background: var(--card); padding: 25px; border-radius: 20px; border-left: 5px solid var(--neon); }
+            /* Grid Layouts */
+            .city-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+            .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
 
-            /* Eco AI bo'limi */
-            .ai-window { background: var(--card); border-radius: 25px; padding: 30px; border: 1px solid #333; }
-            #ai-display { min-height: 150px; background: #0a0a0a; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-size: 14px; color: #ccc; }
-            textarea { width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
+            /* Game Logic */
+            .trash-item { font-size: 80px; transition: 0.3s; }
+            .bin { padding: 20px; border: 2px solid #333; border-radius: 15px; cursor: pointer; transition: 0.3s; text-align: center; font-weight: bold; }
+            .bin:hover { border-color: var(--neon); background: rgba(0,242,254,0.1); }
+            .bin.correct { border-color: #0f0; background: rgba(0,255,0,0.1); }
+            .bin.wrong { border-color: #f00; background: rgba(255,0,0,0.1); }
 
-            /* Eco O'yin */
-            .game-area { background: linear-gradient(135deg, #001f3f, #000); padding: 40px; border-radius: 30px; text-align: center; }
-            .trash-bin { display: inline-block; padding: 20px; margin: 10px; border: 2px dashed var(--neon); cursor: pointer; border-radius: 10px; }
-
-            /* Linklar bo'limi */
-            .link-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-            .link-card { background: #1a1a1a; padding: 20px; border-radius: 15px; text-decoration: none; color: #fff; text-align: center; transition: 0.3s; }
-            .link-card:hover { background: var(--neon); color: #000; }
+            button { background: var(--neon); color: #000; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
         </style>
     </head>
     <body>
 
     <nav>
-        <a href="#monitor">SHAHARLAR</a>
-        <a href="#future">PROGNOZ 2080</a>
-        <a href="#carbon">FOOTPRINT</a>
-        <a href="#ai-expert">ECO AI</a>
-        <a href="#nasa">NASA</a>
-        <a href="#games">O'YINLAR</a>
+        <div style="font-weight: bold; color: var(--neon);">NEURAL ECO v3.0</div>
+        <div style="display:flex; gap:10px;">
+            <button class="lang-btn" onclick="setLang('uz')">UZ</button>
+            <button class="lang-btn" onclick="setLang('en')">EN</button>
+            <button class="lang-btn" onclick="setLang('ru')">RU</button>
+        </div>
     </nav>
 
     <div class="container">
         
-        <section id="monitor">
-            <h2>🌍 GLOBAL MONITORING (Real-Time)</h2>
-            <div class="city-grid" id="city-list">
-                </div>
-        </section>
-
-        <section id="future">
-            <h2>📈 BASHORATLAR VA CARBON FOOTPRINT</h2>
-            <div class="grid-2">
-                <div class="info-box">
-                    <h3>Karbon Footprint (Global)</h3>
-                    <p>Yillik Emissiya: <b style="color:red">37.5 Billion Ton</b></p>
-                    <p>Asosiy manba: Energiya (73.2%)</p>
-                    <canvas id="carbonChart"></canvas>
-                </div>
-                <div class="info-box">
-                    <h3>2025-2080 Prognoz</h3>
-                    <p style="font-size:13px">Siyosiy-tarixiy tahlil: 2080-yilga borib, global harorat +3.2°C ga ko'tarilishi bashorat qilinmoqda. Bu iqtisodiy migratsiyani 40% ga oshiradi.</p>
-                    <canvas id="forecastChart"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <section id="ai-expert">
-            <h2>🤖 ECO AI EXPERT (Hisobot Tayyorlash)</h2>
-            <div class="ai-window">
-                <div id="ai-display">Ekologik muammo haqida so'rang (masalan: "Karbon izini kamaytirish yo'llari")...</div>
-                <textarea id="ai-input" rows="3" placeholder="Savolingizni kiriting..."></textarea>
-                <div style="display:flex; gap:10px">
-                    <button onclick="askEcoAI()" style="background:var(--neon); color:#000; border:none; padding:12px 25px; border-radius:10px; cursor:pointer; font-weight:bold">TAHLIL QILISH</button>
-                    <button onclick="exportPDF()" style="background:#ff4b2b; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer">PDF YUKLASH</button>
-                    <button onclick="exportWord()" style="background:#2b55ff; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer">WORD YUKLASH</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="nasa">
-            <h2>🚀 NASA & KOINOT BILIMLARI</h2>
-            <div class="link-grid">
-                <a href="https://www.nasa.gov" target="_blank" class="link-card">NASA Rasmiy</a>
-                <a href="https://climate.nasa.gov" target="_blank" class="link-card">Iqlim Monitoringi</a>
-                <a href="https://earthobservatory.nasa.gov" target="_blank" class="link-card">Yer Kuzatuvlari</a>
-            </div>
-            <iframe src="https://earth.nullschool.net/#current/wind/surface/level/orthographic=69.21,41.26,1000" style="width:100%; height:400px; border-radius:20px; margin-top:30px; border:none;"></iframe>
-        </section>
-
-        <section id="games">
-            <h2>🎮 ECO-MADANIYAT O'YINLARI</h2>
-            <div class="game-area">
-                <p id="game-item" style="font-size:60px">🧴</p>
-                <p>Ushbu chiqindini qayerga saralaysiz?</p>
-                <div class="trash-bin" onclick="checkGame('p')">PET (Plastik)</div>
-                <div class="trash-bin" onclick="checkGame('o')">ORGANIK</div>
-                <div class="trash-bin" onclick="checkGame('q')">QOGO'Z</div>
-                <p>Ball: <b id="score">0</b></p>
-            </div>
-        </section>
-
         <section>
-            <h2>🌱 FOYDALI RESURSLAR</h2>
-            <div class="link-grid">
-                <a href="https://earth911.com" target="_blank" class="link-card">Earth911</a>
-                <a href="https://news.mongabay.com" target="_blank" class="link-card">Mongabay</a>
-                <a href="https://oceana.org" target="_blank" class="link-card">Oceana</a>
+            <h2 id="t-monitor">SHAHARLAR MONITORINGI</h2>
+            <div class="city-grid" id="city-list"></div>
+        </section>
+
+        <section class="game-grid">
+            <div class="glass">
+                <h2 id="t-forecast">2080 PROGNOZ</h2>
+                <canvas id="forecastChart"></canvas>
+            </div>
+            <div class="glass">
+                <h2 id="t-game">ECO MADANIYAT O'YINI</h2>
+                <div style="text-align:center">
+                    <div id="item-emoji" class="trash-item">🧴</div>
+                    <p id="t-sort">Qaysi idishga tashlaysiz?</p>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+                        <div class="bin" onclick="checkAnswer('plastic')">PLASTIK</div>
+                        <div class="bin" onclick="checkAnswer('organic')">ORGANIK</div>
+                        <div class="bin" onclick="checkAnswer('paper')">QOG'OZ</div>
+                        <div class="bin" onclick="checkAnswer('hazard')">XAVFLI</div>
+                    </div>
+                    <h3>Ball: <span id="score">0</span></h3>
+                </div>
             </div>
         </section>
+
+        <section class="glass" style="margin-top:40px">
+            <h2 id="t-ai">ECO AI CHATBOT (STREAMING)</h2>
+            <div class="ai-container">
+                <div id="ai-display"></div>
+                <div style="display:flex; gap:10px">
+                    <textarea id="ai-input" style="flex-grow:1; background:#111; border:1px solid #333; color:#fff; border-radius:10px; padding:10px;" placeholder="Savolingizni bering..."></textarea>
+                    <button onclick="askAI()">YUBORISH</button>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:10px">
+                    <button onclick="download('pdf')" style="background:#ff4b2b; color:#fff;">PDF</button>
+                    <button onclick="download('doc')" style="background:#2b55ff; color:#fff;">WORD</button>
+                </div>
+            </div>
+        </section>
+
     </div>
 
     <script>
         const GEMINI_KEY = "AIzaSyCl-dBQmgQTJWgA5LR0Fy5Wiq7HLxaHK2Y";
+        let currentLang = 'uz';
+        let score = 0;
+        let currentItem = { emoji: "🧴", type: "plastic" };
 
-        // 1. Shaharlar yuklanishi
-        const cities = [
-            {n:"Toshkent", lt:41.2, ln:69.2}, {n:"Berlin", lt:52.5, ln:13.4},
-            {n:"Pekin", lt:39.9, ln:116.4}, {n:"Seul", lt:37.5, ln:126.9},
-            {n:"Tokio", lt:35.6, ln:139.6}, {n:"Moskva", lt:55.7, ln:37.6},
-            {n:"Istanbul", lt:41.0, ln:28.9}, {n:"Qohira", lt:30.0, ln:31.2},
-            {n:"Rio", lt:-22.9, ln:-43.1}, {n:"Bogota", lt:4.7, ln:-74.0},
-            {n:"Washington", lt:38.8, ln:-77.0}, {n:"Ottawa", lt:45.4, ln:-75.6}
+        const translations = {
+            uz: { monitor: "SHAHARLAR MONITORINGI", forecast: "2080 PROGNOZ", game: "ECO O'YIN", ai: "ECO AI TAHLIL", sort: "Qaysi idishga tashlaysiz?" },
+            en: { monitor: "CITY MONITORING", forecast: "2080 FORECAST", game: "ECO GAME", ai: "ECO AI ANALYSIS", sort: "Where to dispose?" },
+            ru: { monitor: "МОНИТОРИНГ ГОРОДОВ", forecast: "ПРОГНОЗ 2080", game: "ЭКО ИГРА", ai: "ЭКО ИИ АНАЛИЗ", sort: "Куда выбросить?" }
+        };
+
+        function setLang(l) {
+            currentLang = l;
+            document.getElementById('t-monitor').innerText = translations[l].monitor;
+            document.getElementById('t-forecast').innerText = translations[l].forecast;
+            document.getElementById('t-game').innerText = translations[l].game;
+            document.getElementById('t-ai').innerText = translations[l].ai;
+            document.getElementById('t-sort').innerText = translations[l].sort;
+        }
+
+        // 1. AI Streaming (ChatGPT kabi yozish)
+        async function askAI() {
+            const input = document.getElementById('ai-input').value;
+            const display = document.getElementById('ai-display');
+            display.innerHTML = ""; 
+            
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
+                    method: 'POST',
+                    body: JSON.stringify({contents: [{parts: [{text: `Til: ${currentLang}. Savol: ${input}. Batafsil va ilmiy javob ber.`}]}]})
+                });
+                const data = await res.json();
+                const text = data.candidates[0].content.parts[0].text;
+                
+                // Typing effekti
+                let i = 0;
+                const timer = setInterval(() => {
+                    display.innerHTML += text.charAt(i);
+                    i++;
+                    if (i >= text.length) clearInterval(timer);
+                    display.scrollTop = display.scrollHeight;
+                }, 15);
+            } catch(e) { display.innerText = "Xatolik yuz berdi."; }
+        }
+
+        // 2. To'g'rilangan O'yin mantiqi
+        const trashItems = [
+            {e:"🧴", t:"plastic"}, {e:"🍎", t:"organic"}, {e:"📰", t:"paper"}, 
+            {e:"🔋", t:"hazard"}, {e:"🥤", t:"plastic"}, {e:"🍌", t:"organic"}
         ];
 
-        async function initCities() {
+        function checkAnswer(type) {
+            if(type === currentItem.type) {
+                score += 10;
+                alert("To'g'ri! +10 ball");
+            } else {
+                score -= 5;
+                alert("Xato! Bu " + currentItem.type + " edi.");
+            }
+            document.getElementById('score').innerText = score;
+            currentItem = trashItems[Math.floor(Math.random()*trashItems.length)];
+            document.getElementById('item-emoji').innerText = currentItem.emoji;
+        }
+
+        // 3. Shaharlar (12 ta)
+        const cities = [
+            {n:"Toshkent", lt:41.2, ln:69.2}, {n:"Berlin", lt:52.5, ln:13.4}, {n:"Pekin", lt:39.9, ln:116.4},
+            {n:"Seul", lt:37.5, ln:126.9}, {n:"Tokio", lt:35.6, ln:139.6}, {n:"Moskva", lt:55.7, ln:37.6},
+            {n:"Istanbul", lt:41.0, ln:28.9}, {n:"Qohira", lt:30.0, ln:31.2}, {n:"Rio", lt:-22.9, ln:-43.1},
+            {n:"Bogota", lt:4.7, ln:-74.0}, {n:"Washington", lt:38.8, ln:-77.0}, {n:"Ottawa", lt:45.4, ln:-75.6}
+        ];
+
+        async function loadCities() {
             const list = document.getElementById('city-list');
             for(let c of cities) {
-                const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lt}&longitude=${c.ln}&current=temperature_2m`);
-                const d = await r.json();
-                list.innerHTML += `<div class="city-card"><h4>${c.n}</h4><div class="city-temp">${Math.round(d.current.temperature_2m)}°C</div></div>`;
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lt}&longitude=${c.ln}&current=temperature_2m`);
+                const data = await res.json();
+                list.innerHTML += `<div class="glass" style="text-align:center"><h4>${c.n}</h4><b style="font-size:24px; color:var(--neon)">${Math.round(data.current.temperature_2m)}°C</b></div>`;
             }
         }
 
-        // 2. Grafiklarni chizish
-        const fCtx = document.getElementById('forecastChart').getContext('2d');
-        new Chart(fCtx, {
+        // Chart Init
+        new Chart(document.getElementById('forecastChart'), {
             type: 'line',
-            data: {
-                labels: ['2025','2035','2045','2055','2065','2075','2080'],
-                datasets: [{label: 'Harorat (°C)', data:[1.2, 1.6, 2.0, 2.5, 2.9, 3.1, 3.2], borderColor:'#00f2fe'}]
-            }
+            data: { labels: ['2025','2040','2060','2080'], datasets: [{label:'Temp Change', data:[1.1, 1.8, 2.6, 3.4], borderColor:'#00f2fe'}] },
+            options: { plugins: { legend: { labels: { color: 'white' } } } }
         });
 
-        // 3. AI Expert Funksiyasi
-        async function askEcoAI() {
-            const q = document.getElementById('ai-input').value;
-            const disp = document.getElementById('ai-display');
-            disp.innerText = "Sun'iy intellekt hisobot tayyorlamoqda...";
-            
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
-                method:'POST',
-                body: JSON.stringify({contents:[{parts:[{text: q + ". O'zbek tilida ilmiy, batafsil hisobot yoz."}]}]})
-            });
-            const data = await res.json();
-            disp.innerText = data.candidates[0].content.parts[0].text;
-        }
-
-        // PDF va Word Export
-        function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.setFontSize(10);
-            const text = document.getElementById('ai-display').innerText;
-            const splitText = doc.splitTextToSize(text, 180);
-            doc.text(splitText, 10, 10);
-            doc.save("eco-report.pdf");
-        }
-
-        function exportWord() {
+        function download(type) {
             const content = document.getElementById('ai-display').innerText;
-            const blob = new Blob(['\\ufeff', content], {type: 'application/msword'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'eco-report.doc'; a.click();
+            if(type === 'pdf') {
+                const doc = new jspdf.jsPDF();
+                doc.text(content, 10, 10);
+                doc.save("report.pdf");
+            } else {
+                const blob = new Blob([content], {type: 'application/msword'});
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = "report.doc";
+                link.click();
+            }
         }
 
-        // 4. Eco Game Mantiqi
-        let score = 0;
-        function checkGame(type) {
-            score += 10;
-            document.getElementById('score').innerText = score;
-            const items = ["📦", "🔋", "🍎", "📰", "🥤"];
-            document.getElementById('game-item').innerText = items[Math.floor(Math.random()*items.length)];
-        }
-
-        initCities();
+        loadCities();
     </script>
     </body>
     </html>

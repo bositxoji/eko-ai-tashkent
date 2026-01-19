@@ -4,3 +4,6 @@ google-generativeai
 requests
 numpy
 scikit-learn
+streamlit
+pandas
+matplotlib

@@ -1,97 +1,182 @@
-import os
-from flask import Flask, render_template_string, request, jsonify
+import streamlit as st
+import pandas as pd
+import requests
+import google.generativeai as genai
+from streamlit_folium import st_folium
+import folium
 
-app = Flask(__name__)
+# --- 1. SAHIFA SOZLAMALARI ---
+st.set_page_config(
+    page_title="Global Eco-Portal",
+    page_icon="🌍",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# --- KENGAYTIRILGAN O'ZBEK TILIDAGI BILIMLAR BAZASI ---
-KNOWLEDGE_BASE = {
-    "suv": "NASA va UNEP ma'lumotlariga ko'ra, global chuchuk suv tanqisligi 2026-yilda eng yuqori nuqtaga chiqishi kutilmoqda. Markaziy Osiyo mintaqasida muzliklarning erishi daryolar oqimini kamaytirib, qishloq xo'jaligiga jiddiy xavf solmoqda. Google Sustainability tahlillari suvni tejash texnologiyalarini joriy etishni 40% samaraliroq deb hisoblaydi.",
-    "havo": "Havo ifloslanishi (PM2.5) hozirda megapolislarda me'yordan 15 baravar yuqori. NASA monitoringi shuni ko'rsatadiki, bu nafaqat sog'liqqa, balki mahalliy iqlimning isishiga ham sabab bo'ladi. UNEP tavsiyasiga ko'ra, yashil hududlarni 30% ga ko'paytirish havo sifatini sezilarli yaxshilaydi.",
-    "iqlim": "Global isish natijasida 2025-2026 yillarda o'rtacha harorat 1.2°C ga oshdi. Bu issiqxona gazlarining (CO2) rekord darajadagi 425 ppm ko'rsatkichi bilan bog'liq. NASA Climate Now loyihasi muzliklarning erishini to'xtatish uchun karbon neytralligiga erishishni shart deb biladi.",
-    "chiqindi": "Dunyo okeanlaridagi plastik miqdori har yili 10 million tonnaga ko'paymoqda. Google AI tahlillari chiqindilarni saralash va qayta ishlash darajasini 60% ga yetkazish orqali ekologik muvozanatni tiklash mumkinligini ko'rsatmoqda."
-}
+# --- 2. STYLE (DIZAYN) ---
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; }
+    h1 { color: #00d2ff; }
+    .stButton>button { width: 100%; border-radius: 5px; background: #1f2937; color: white; border: 1px solid #374151; }
+    .stButton>button:hover { border-color: #00d2ff; color: #00d2ff; }
+    .metric-card { background: #1f2937; padding: 15px; border-radius: 10px; border-left: 5px solid #00d2ff; margin-bottom: 10px; }
+    </style>
+    """, unsafe_allow_stdio=True)
 
-def generate_detailed_response(user_query):
-    query = user_query.lower()
-    detailed_text = ""
+# --- 3. SIDEBAR MENYU (NAVIGATSIYA) ---
+with st.sidebar:
+    st.title("🌐 GLOBAL NAVIGATSIYA")
+    st.write("Xalqaro platformalar integratsiyasi")
     
-    # 1. Kalit so'zlarni tekshirish va tahlil qilish
-    found = False
-    for key, data in KNOWLEDGE_BASE.items():
-        if key in query:
-            detailed_text += f"### 🌍 {key.upper()} BO'YICHA GLOBAL TAHLIL\n{data}\n\n"
-            found = True
-            
-    # 2. Agar aniq kalit so'z bo'lmasa, universal o'zbekcha javob yasash
-    if not found:
-        detailed_text = f"""
-        ### 🤖 ECO-AI ANALITIK HISOBOTI
-        Sizning "{user_query}" bo'yicha so'rovingiz qabul qilindi. 
-        
-        **NASA va Google Data Insights** tahlillari shuni ko'rsatadiki, ushbu masala hozirgi global ekologik inqiroz sharoitida juda dolzarbdir. 
-        UNEP (BMT Atrof-muhit dasturi) ma'lumotlariga ko'ra, insoniyat 2030-yilgacha ekologik barqarorlikni ta'minlash uchun raqamli monitoring tizimlarini (AI) joriy etishi shart. 
-        
-        **Xulosa:** Tizim ushbu yo'nalishda ilmiy tadqiqotlarni davom ettirmoqda. Kelajakda barqaror yechimlar faqat ilmiy va texnologik yondashuv orqali amalga oshiriladi.
-        """
+    menu = st.radio(
+        "Bo'limni tanlang:",
+        [
+            "🏠 Bosh Sahifa",
+            "1. 💨 IQAir (Havo Sifati)",
+            "2. 💧 GEMStat (Suv Sifati)",
+            "3. 🌱 SoilGrids (Tuproq)",
+            "4. 🌋 USGS (Zilzilalar)",
+            "5. 📉 IPCC (Iqlim O'zgarishi)",
+            "6. 🗺️ Google Earth (Map)",
+            "7. 🤖 Gemini AI (Assistant)"
+        ]
+    )
+    st.divider()
+    st.info("Status: Tizim Online ✅")
+
+# --- 4. ASOSIY MANTIQ ---
+
+# === BOSH SAHIFA ===
+if menu == "🏠 Bosh Sahifa":
+    st.title("🌍 Yagona Ekologik Portal")
+    st.markdown("""
+    ### Xush kelibsiz!
+    Ushbu portal dunyodagi eng yirik **7 ta ekologik va ilmiy platformani** o'zida jamlagan.
     
-    return detailed_text
-
-@app.route('/')
-def index():
-    return render_template_string("""
-    <!DOCTYPE html>
-    <html lang="uz">
-    <head>
-        <meta charset="UTF-8">
-        <title>ECO-AI WORLD | Uzb Edition</title>
-        <style>
-            body { background: #05070a; color: #e6edf3; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-            .chat-container { max-width: 900px; margin: 50px auto; background: #0d1117; border: 1px solid #30363d; border-radius: 15px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-            h1 { color: #00d2ff; text-align: center; }
-            #output { min-height: 300px; border-bottom: 1px solid #30363d; margin-bottom: 20px; padding: 10px; white-space: pre-wrap; line-height: 1.6; }
-            .input-group { display: flex; gap: 10px; }
-            input { flex: 1; background: #010409; border: 1px solid #30363d; color: white; padding: 15px; border-radius: 8px; font-size: 16px; }
-            button { background: #00d2ff; color: black; border: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-            button:hover { background: #0099cc; }
-        </style>
-    </head>
-    <body>
-        <div class="chat-container">
-            <h1>🌱 ECO-AI GLOBAL PORTAL</h1>
-            <div id="output">Tizim tayyor. O'zbek tilida savol bering...</div>
-            <div class="input-group">
-                <input type="text" id="userInput" placeholder="Savol yozing (masalan: daryolar muammosi)...">
-                <button onclick="askAI()">TAHLIL</button>
-            </div>
-        </div>
-        <script>
-            function askAI() {
-                const inp = document.getElementById('userInput');
-                const out = document.getElementById('output');
-                if(!inp.value) return;
-
-                out.innerHTML = "Tahlil qilinmoqda...";
-                fetch('/process', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({query: inp.value})
-                })
-                .then(res => res.json())
-                .then(data => {
-                    out.innerHTML = data.response;
-                    inp.value = '';
-                });
-            }
-        </script>
-    </body>
-    </html>
+    **Mavjud imkoniyatlar:**
+    * Real vaqtda havo va suv monitoringi.
+    * NASA va USGS ma'lumotlari asosida xaritalar.
+    * **Google Earth** vizualizatsiyasi.
+    * **Gemini AI** orqali aqlli tahlil.
+    
+    ⬅️ *Ishni boshlash uchun chap tomondagi menyudan birini tanlang.*
     """)
 
-@app.route('/process', methods=['POST'])
-def process():
-    data = request.json
-    response = generate_detailed_response(data.get('query', ''))
-    return jsonify({"response": response})
+# === 1. IQAir (Havo) ===
+elif "IQAir" in menu:
+    st.header("💨 IQAir: Global Havo Sifati Monitoringi")
+    st.markdown("Real vaqt rejimida hududlardagi havo ifloslanish darajasi (AQI).")
+    
+    # Iframe orqali IQAir vidjetini qo'shish (Imitatsiya)
+    st.info("IQAir Global xaritasi yuklanmoqda...")
+    st.components.v1.iframe("https://www.iqair.com/air-quality-map", height=600, scrolling=True)
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+# === 2. GEMStat (Suv) ===
+elif "GEMStat" in menu:
+    st.header("💧 GEMStat: Global Suv Sifati")
+    st.write("BMT va GEMS/Water dasturi doirasidagi suv resurslari tahlili.")
+    st.warning("⚠️ GEMStat to'g'ridan-to'g'ri integratsiyani cheklaydi. Quyidagi tugma orqali rasmiy portalga o'tishingiz mumkin.")
+    st.link_button("GEMStat Portaliga O'tish", "https://gemstat.org/")
+
+# === 3. SoilGrids (Tuproq) ===
+elif "SoilGrids" in menu:
+    st.header("🌱 SoilGrids: Tuproq Tarkibi Xaritasi")
+    st.write("ISRIC — World Soil Information ma'lumotlari.")
+    st.components.v1.iframe("https://soilgrids.org/", height=600, scrolling=True)
+
+# === 4. USGS (Zilzilalar - API Integratsiyasi) ===
+elif "USGS" in menu:
+    st.header("🌋 USGS: Real Vaqtda Zilzilalar")
+    
+    # USGS API dan jonli ma'lumot olish
+    try:
+        url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
+        response = requests.get(url).json()
+        quakes = []
+        for feature in response['features']:
+            coords = feature['geometry']['coordinates']
+            props = feature['properties']
+            quakes.append({
+                "Joy": props['place'],
+                "Magnituda": props['mag'],
+                "lat": coords[1],
+                "lon": coords[0]
+            })
+        
+        df_quakes = pd.DataFrame(quakes)
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.map(df_quakes, latitude='lat', longitude='lon', size='Magnituda')
+        with col2:
+            st.write("So'nggi 24 soatdagi zilzilalar:")
+            st.dataframe(df_quakes[['Joy', 'Magnituda']], height=400)
+            
+    except Exception as e:
+        st.error(f"Ma'lumot olishda xatolik: {e}")
+
+# === 5. IPCC (Iqlim) ===
+elif "IPCC" in menu:
+    st.header("📉 IPCC: Iqlim O'zgarishi Bo'yicha Hisobotlar")
+    st.write("Intergovernmental Panel on Climate Change (IPCC) rasmiy ma'lumotlari.")
+    st.components.v1.iframe("https://www.ipcc.ch/", height=600, scrolling=True)
+
+# === 6. Google Earth (Vizualizatsiya) ===
+elif "Google Earth" in menu:
+    st.header("🗺️ Google Earth (Satellite View)")
+    st.write("Sun'iy yo'ldosh orqali yer yuzini kuzatish.")
+    
+    # Folium yordamida Google Satellite xaritasini yaratish
+    m = folium.Map(location=[41.2995, 69.2401], zoom_start=5) # Default: Tashkent
+    folium.TileLayer(
+        tiles = 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+        attr = 'Google',
+        name = 'Google Satellite',
+        overlay = True,
+        control = True
+    ).add_to(m)
+    
+    st_folium(m, width=1200, height=600)
+
+# === 7. Gemini AI (Chat) ===
+elif "Gemini" in menu:
+    st.header("🤖 Gemini AI: Ekologik Maslahatchi")
+    
+    # API Kalitni kiritish (Xavfsizlik uchun)
+    api_key = st.text_input("Google Gemini API Kalitingizni kiriting:", type="password")
+    
+    if api_key:
+        genai.configure(api_key=api_key)
+        
+        # Chat tarixi
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+
+        # Tarixni chiqarish
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+        # Yangi savol
+        if prompt := st.chat_input("Savol bering (Masalan: O'zbekistonda suv muammosi)..."):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.markdown(prompt)
+
+            try:
+                model = genai.GenerativeModel("gemini-pro")
+                response = model.generate_content(prompt)
+                
+                with st.chat_message("assistant"):
+                    st.markdown(response.text)
+                
+                st.session_state.messages.append({"role": "assistant", "content": response.text})
+            except Exception as e:
+                st.error(f"Xatolik yuz berdi: {e}")
+    else:
+        st.warning("Iltimos, ishlash uchun API kalitni kiriting. (Agar yo'q bo'lsa, Google AI Studio'dan oling)")
+        st.markdown("[API Kalit olish uchun havola](https://aistudio.google.com/app/apikey)")
+
+# --- FOOTER ---
+st.markdown("---")
+st.caption("© 2026 Global Eco-Portal | Barcha huquqlar himoyalangan.")

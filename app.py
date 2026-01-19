@@ -2,43 +2,54 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# -----------------------------
-# PAGE CONFIG (HAR DOIM ENG TEPADA)
-# -----------------------------
+# ==================================================
+# SAHIFA SOZLAMASI (ENG BIRINCHI QATORLARDA BO‘LISHI SHART)
+# ==================================================
 st.set_page_config(
-    page_title="Ekologik Monitoring",
-    page_icon="🌱",
+    page_title="ECO-AI Ekologik Tahlil",
+    page_icon="🌍",
     layout="wide"
 )
 
-st.title("🌍 Ekologik Monitoring va Chuqur Tahlil")
-
-st.write(
-    "Bu ilova ekologik ko‘rsatkichlarni muhandislik va ilmiy asosda tahlil qiladi."
+# ==================================================
+# Sarlavha
+# ==================================================
+st.title("🌱 ECO-AI | Ekologik Monitoring va Chuqur Tahlil")
+st.markdown(
+    """
+    Ushbu tizim ekologik ko‘rsatkichlarni **ilmiy, muhandislik va tahliliy**
+    yondashuv asosida baholaydi.  
+    Barcha tahlillar **to‘liq o‘zbek tilida** taqdim etiladi.
+    """
 )
 
-# -----------------------------
-# MAʼLUMOTLAR
-# -----------------------------
-df = pd.DataFrame({
+# ==================================================
+# DEMO MAʼLUMOTLAR (KEYIN CSV BILAN ALMASHTIRISH MUMKIN)
+# ==================================================
+data = {
     "Yil": [2018, 2019, 2020, 2021, 2022, 2023],
     "CO2 (ppm)": [410, 412, 415, 418, 421, 425],
-    "Ifloslanish indeksi": [78, 82, 90, 88, 92, 97],
-    "Harorat (°C)": [14.2, 14.4, 14.8, 15.1, 15.4, 15.8]
-})
+    "Havo ifloslanishi indeksi": [78, 82, 90, 88, 92, 97],
+    "O‘rtacha harorat (°C)": [14.2, 14.4, 14.8, 15.1, 15.4, 15.8]
+}
 
-st.subheader("📊 Jadval")
-st.dataframe(df)
+df = pd.DataFrame(data)
 
-# -----------------------------
-# GRAFIK (RENDER SAFE)
-# -----------------------------
-st.subheader("📈 Grafik tahlil")
+# ==================================================
+# JADVAL
+# ==================================================
+st.subheader("📊 Ekologik ko‘rsatkichlar jadvali")
+st.dataframe(df, use_container_width=True)
+
+# ==================================================
+# GRAFIK (RENDER BILAN MOS)
+# ==================================================
+st.subheader("📈 Vaqt bo‘yicha ekologik o‘zgarishlar")
 
 fig = plt.figure()
-plt.plot(df["Yil"], df["CO2 (ppm)"], label="CO2")
-plt.plot(df["Yil"], df["Ifloslanish indeksi"], label="Ifloslanish")
-plt.plot(df["Yil"], df["Harorat (°C)"], label="Harorat")
+plt.plot(df["Yil"], df["CO2 (ppm)"], marker="o", label="CO2 (ppm)")
+plt.plot(df["Yil"], df["Havo ifloslanishi indeksi"], marker="s", label="Havo ifloslanishi")
+plt.plot(df["Yil"], df["O‘rtacha harorat (°C)"], marker="^", label="Harorat (°C)")
 plt.xlabel("Yil")
 plt.ylabel("Qiymat")
 plt.legend()
@@ -46,30 +57,84 @@ plt.grid(True)
 
 st.pyplot(fig)
 
-# -----------------------------
-# CHUQUR TAHLIL
-# -----------------------------
-st.subheader("🧠 Ekologik tahlil")
+# ==================================================
+# CHUQUR TAHLIL (ASOSIY QISM)
+# ==================================================
+st.subheader("🧠 Chuqur ekologik va muhandislik tahlili")
 
-st.markdown("""
-### Umumiy xulosa
+analysis_text = f"""
+### 1️⃣ Umumiy ekologik holat
 
-So‘nggi 6 yil ichida:
+Keltirilgan maʼlumotlarga ko‘ra, {df['Yil'].iloc[0]}–{df['Yil'].iloc[-1]} yillar oralig‘ida
+ekologik ko‘rsatkichlarning deyarli barchasida **salbiy o‘sish tendensiyasi** kuzatilmoqda.
 
-- Atmosferadagi **CO2 miqdori izchil oshgan**
-- Havo ifloslanishi **sog‘liq uchun xavfli darajaga yaqinlashgan**
-- Harorat o‘sishi **global isish jarayonini tasdiqlaydi**
+Atmosferadagi **CO2 miqdori** {df['CO2 (ppm)'].iloc[0]} ppm dan
+{df['CO2 (ppm)'].iloc[-1]} ppm gacha oshgan.
+Bu holat sanoat, energetika va transport sektorlaridagi yuklama ortishi bilan bog‘liq.
 
-### Muhandislik nuqtai nazari
+---
 
-Agar ushbu trend saqlanib qolsa:
-- Karbon tutish tizimlari joriy etilishi shart
-- Yashil infratuzilma kengaytirilishi kerak
-- AI asosida real vaqt monitoring zarur
+### 2️⃣ Havo ifloslanishi tahlili
 
-### Yakun
+Havo ifloslanishi indeksi:
+- Eng past qiymat: **{df['Havo ifloslanishi indeksi'].min()}**
+- Eng yuqori qiymat: **{df['Havo ifloslanishi indeksi'].max()}**
 
-Bu raqamlar ekologik muammo **real va o‘lchab bo‘ladigan xavf** ekanini ko‘rsatadi.
-""")
+Mazkur ko‘rsatkichning o‘sishi:
+- Aholi salomatligi uchun xavf
+- Nafas yo‘llari kasalliklarining ko‘payishi
+- Shahar ekologik barqarorligining pasayishi
 
-st.success("Tahlil muvaffaqiyatli bajarildi ✅")
+kabi muammolarni yuzaga keltiradi.
+
+---
+
+### 3️⃣ Harorat va global isish o‘rtasidagi bog‘liqlik
+
+O‘rtacha harorat:
+- Boshlang‘ich yil: **{df['O‘rtacha harorat (°C)'].iloc[0]} °C**
+- Oxirgi yil: **{df['O‘rtacha harorat (°C)'].iloc[-1]} °C**
+
+CO2 konsentratsiyasining ortishi **issiqxona effekti**ni kuchaytirib,
+haroratning bosqichma-bosqich oshishiga sabab bo‘lmoqda.
+
+---
+
+### 4️⃣ Muhandislik nuqtai nazaridan xavf bahosi
+
+Agar ushbu tendensiya saqlanib qolsa:
+- Energiya tizimlarida samaradorlik pasayadi
+- Iqlimga moslashuv xarajatlari oshadi
+- Ekotizimlar degradatsiyasi tezlashadi
+
+Bu esa uzoq muddatda iqtisodiy va ijtimoiy barqarorlikka tahdid soladi.
+
+---
+
+### 5️⃣ Amaliy tavsiyalar (engineering-based)
+
+✅ Qayta tiklanuvchi energiya manbalarini kengaytirish  
+✅ Karbon tutish va saqlash (CCS) texnologiyalarini joriy etish  
+✅ Yashil shahar infratuzilmasi (daraxtzorlar, yashil tomlar)  
+✅ Sunʼiy intellekt asosidagi ekologik monitoring  
+✅ Transport tizimini elektrlashtirish  
+
+---
+
+### 🟢 Yakuniy xulosa
+
+Mazkur tahlil shuni ko‘rsatadiki, ekologik muammolar
+**nazariy emas**, balki **aniq raqamlar bilan isbotlangan real xavf**dir.
+
+Bugun amalga oshiriladigan muhandislik va boshqaruv qarorlari
+kelajak avlodlar uchun barqaror muhitni taʼminlaydi.
+"""
+
+st.markdown(analysis_text)
+
+# ==================================================
+# FOOTER
+# ==================================================
+st.markdown("---")
+st.success("Tahlil muvaffaqiyatli yakunlandi ✅")
+st.caption("ECO-AI | Ekologik monitoring va ilmiy tahlil tizimi")

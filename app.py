@@ -1,93 +1,134 @@
-import os
-import numpy as np
-from flask import Flask, request, jsonify, render_template_string
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
 
-app = Flask(__name__)
+# -----------------------------
+# SAHIFA SOZLAMALARI
+# -----------------------------
+st.set_page_config(
+    page_title="Ekologik Monitoring va Tahlil",
+    page_icon="🌱",
+    layout="wide"
+)
 
-# ===============================
-# ECO KNOWLEDGE BASE
-# ===============================
-ECO_DATA = [
-    {
-        "title": "Water Scarcity",
-        "content": "Over 2 billion people lack access to safe drinking water. Climate change and overuse are major drivers."
-    },
-    {
-        "title": "Air Pollution",
-        "content": "PM2.5 pollution causes over 7 million premature deaths annually. Transport and industry are main sources."
-    },
-    {
-        "title": "Climate Change",
-        "content": "Global temperature increased by 1.1°C. Climate change intensifies floods and droughts."
-    },
-    {
-        "title": "Renewable Energy",
-        "content": "Renewable energy must supply 50% of electricity by 2030 to meet climate targets."
-    },
-    {
-        "title": "Plastic Waste",
-        "content": "8–10 million tons of plastic enter oceans every year causing ecosystem damage."
-    }
-]
-
-documents = [d["content"] for d in ECO_DATA]
-
-# ===============================
-# LIGHTWEIGHT SEMANTIC ENGINE
-# ===============================
-vectorizer = TfidfVectorizer(stop_words="english")
-doc_vectors = vectorizer.fit_transform(documents)
-
-def eco_ai_engine(query):
-    query_vec = vectorizer.transform([query])
-    similarities = cosine_similarity(query_vec, doc_vectors)[0]
-    top_indices = similarities.argsort()[-3:][::-1]
-
-    analysis = ""
-    for i in top_indices:
-        analysis += f"<p><b>{ECO_DATA[i]['title']}:</b> {ECO_DATA[i]['content']}</p>"
-
-    return f"""
-    <div>
-        <h3 style="color:#00d2ff;">🌍 ECO-AI ANALYSIS</h3>
-        <p><i>Query:</i> {query}</p>
-        <hr>
-        {analysis}
-        <p style="background:#112;padding:10px;">
-        <b>Conclusion:</b> This issue is connected to global ecological sustainability.
-        </p>
-    </div>
+st.title("🌍 Ekologik Monitoring va Chuqur Tahlil Tizimi")
+st.markdown(
     """
+    Ushbu ilova ekologik maʼlumotlarni **muhandislik va ilmiy nuqtai nazardan**
+    tahlil qiladi. Natijalar **to‘liq o‘zbek tilida** va **keng sharhlar bilan**
+    beriladi.
+    """
+)
 
-# ===============================
-# ROUTES
-# ===============================
-@app.route("/")
-def index():
-    return render_template_string("""
-    <html>
-    <body style="background:#0b0e14;color:white;font-family:Arial">
-    <h1>GLOBAL ECO-AI</h1>
-    <input id="q" placeholder="Savol yozing">
-    <button onclick="ask()">Tahlil</button>
-    <div id="out"></div>
-    <script>
-    function ask(){
-        fetch("/ask",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({query:document.getElementById("q").value})})
-        .then(r=>r.json()).then(d=>out.innerHTML+=d.response)
-    }
-    </script>
-    </body>
-    </html>
-    """)
+# -----------------------------
+# DEMO MAʼLUMOTLAR
+# -----------------------------
+data = {
+    "Yil": [2018, 2019, 2020, 2021, 2022, 2023],
+    "CO2 (ppm)": [410, 412, 415, 418, 421, 425],
+    "Havo ifloslanishi indeksi": [78, 82, 90, 88, 92, 97],
+    "O‘rtacha harorat (°C)": [14.2, 14.4, 14.8, 15.1, 15.4, 15.8]
+}
 
-@app.route("/ask", methods=["POST"])
-def ask():
-    q = request.json.get("query","")
-    return jsonify({"response": eco_ai_engine(q)})
+df = pd.DataFrame(data)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+st.subheader("📊 Ekologik ko‘rsatkichlar jadvali")
+st.dataframe(df, use_container_width=True)
+
+# -----------------------------
+# GRAFIK
+# -----------------------------
+st.subheader("📈 Vaqt bo‘yicha o‘zgarishlar")
+
+fig, ax = plt.subplots()
+ax.plot(df["Yil"], df["CO2 (ppm)"], marker='o', label="CO2 (ppm)")
+ax.plot(df["Yil"], df["Havo ifloslanishi indeksi"], marker='s', label="Havo ifloslanishi")
+ax.plot(df["Yil"], df["O‘rtacha harorat (°C)"], marker='^', label="Harorat (°C)")
+ax.set_xlabel("Yil")
+ax.set_ylabel("Qiymat")
+ax.legend()
+ax.grid(True)
+
+st.pyplot(fig)
+
+# -----------------------------
+# CHUQUR TAHLIL (ASOSIY QISM)
+# -----------------------------
+st.subheader("🧠 Muhandislik va Ekologik Chuqur Tahlil")
+
+analysis_text = f"""
+### 1️⃣ Umumiy holat tahlili
+
+2018–2023 yillar oralig‘ida ekologik ko‘rsatkichlarda **barqaror salbiy o‘sish**
+kuzatilmoqda. Ayniqsa, atmosferadagi **CO2 konsentratsiyasi** {df['CO2 (ppm)'].iloc[0]} ppm dan
+{df['CO2 (ppm)'].iloc[-1]} ppm gacha oshgan.
+
+Bu esa sanoatlashuv, transport vositalarining ko‘payishi va yashil hududlarning
+kamayishi bilan bevosita bog‘liq.
+
+---
+
+### 2️⃣ Havo ifloslanishi indeksi tahlili
+
+Havo ifloslanishi indeksi:
+- Minimal qiymat: **{df['Havo ifloslanishi indeksi'].min()}**
+- Maksimal qiymat: **{df['Havo ifloslanishi indeksi'].max()}**
+
+Bu ko‘rsatkichning oshishi:
+- Aholi salomatligiga xavf
+- Nafas yo‘llari kasalliklarining ko‘payishi
+- Shahar ekologik barqarorligining buzilishi
+
+kabi muammolarni keltirib chiqaradi.
+
+---
+
+### 3️⃣ Harorat o‘sishining ilmiy izohi
+
+O‘rtacha harorat:
+- 2018 yilda: **{df['O‘rtacha harorat (°C)'].iloc[0]} °C**
+- 2023 yilda: **{df['O‘rtacha harorat (°C)'].iloc[-1]} °C**
+
+Bu **global isish (global warming)** jarayonining mahalliy ko‘rinishidir.
+CO2 miqdori ortishi issiqxona effektini kuchaytirib,
+haroratning yilma-yil oshishiga sabab bo‘lmoqda.
+
+---
+
+### 4️⃣ Muhandislik nuqtai nazaridan xulosa
+
+Agar mavjud trend davom etsa:
+- Energiya samarador texnologiyalar joriy etilmasa
+- Karbonni ushlash (Carbon Capture) tizimlari qo‘llanilmasa
+- Yashil infratuzilma kengaytirilmasa
+
+2025–2030 yillarga borib ekologik holat **kritik bosqichga** yetishi mumkin.
+
+---
+
+### 5️⃣ Tavsiyalar (engineering-based)
+
+✅ Dikey bog‘lar va yashil tomlar  
+✅ Karbon tutish modullari  
+✅ Sunʼiy intellekt asosidagi monitoring  
+✅ Sanoatda chiqindi gazlarni filtrlash  
+✅ Transportni elektrlashtirish  
+
+---
+
+### 🟢 Yakuniy xulosa
+
+Mazkur tahlil shuni ko‘rsatadiki, ekologik muammolar **faqat nazariy emas**,
+balki **aniq raqamlar bilan isbotlangan real xavf**dir.
+
+Agar bugun choralar ko‘rilmasa, ertaga iqtisodiy va ijtimoiy yo‘qotishlar
+yanada kuchayadi.
+"""
+
+st.markdown(analysis_text)
+
+# -----------------------------
+# FOOTER
+# -----------------------------
+st.markdown("---")
+st.markdown("🌱 **Ekologik AI Monitoring Tizimi** | Ilmiy va muhandislik tahlili")

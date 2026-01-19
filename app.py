@@ -1,29 +1,24 @@
 import streamlit as st
 
-# Sahifa sozlamalari
+# Sahifa sarlavhasi
 st.set_page_config(page_title="ECO-WORKSPACE", layout="centered")
 
-# Sarlavha
-st.title("🌍 Eco-Web Navigatsiya")
-st.write("Tanlangan xizmatga o'tish uchun tugmani bosing:")
+st.title("🌍 Eco-Web Portal")
+st.write("Tanlangan xizmatga o'tish uchun quyidagi tugmalarni bosing:")
 
-st.markdown("---")
+st.divider()
 
-# 1. IQAir tugmasi
-st.subheader("1. Havo monitoringi")
-if st.button("💨 iqair.com saytiga o'tish", use_container_width=True):
-    # Bu kod brauzerda yangi oyna ochib yuboradi
-    st.markdown('<a href="https://www.iqair.com" target="_blank">Saytga o\'tish uchun bu erni bosing (Yangi oyna)</a>', unsafe_allow_stdio=True)
-    st.link_button("IQAir ni ochish", "https://www.iqair.com")
+# 1. IQAir bo'limi
+st.subheader("1. IQAir (Havo Monitoringi)")
+st.info("Bu tugma iqair.com saytini yangi oynada ochadi.")
+st.link_button("💨 iqair.com saytiga o'tish", "https://www.iqair.com", use_container_width=True)
 
-st.markdown("---")
+st.divider()
 
-# 7. Gemini tugmasi
-st.subheader("7. Sun'iy intellekt")
-if st.button("🤖 Gemini (Men bilan gaplashish)", use_container_width=True):
-    # To'g'ridan-to'g'ri Gemini rasmiy saytiga o'tkazish
-    st.markdown('<a href="https://gemini.google.com" target="_blank">Gemini saytiga o\'tish uchun bu erni bosing (Yangi oyna)</a>', unsafe_allow_stdio=True)
-    st.link_button("Gemini AI ga kirish", "https://gemini.google.com")
+# 7. Gemini bo'limi
+st.subheader("7. Gemini AI")
+st.success("Bu tugma orqali to'g'ridan-to'g'ri menga (Gemini) o'tasiz. Hech qanday API kalit shart emas!")
+st.link_button("🤖 Gemini (Muloqotni boshlash)", "https://gemini.google.com", use_container_width=True)
 
-st.markdown("---")
-st.info("Eslatma: Tugmani bosganingizda paydo bo'ladigan ko'k havolani (link) bossangiz, saytlar alohida oynada ochiladi.")
+st.divider()
+st.caption("Eslatma: Saytlar xavfsizlik nuqtai nazaridan alohida oynada ochiladi.")

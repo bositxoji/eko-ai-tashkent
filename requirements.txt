@@ -1,6 +1,5 @@
 streamlit
-pandas
-requests
+streamlit_option_menu
+google-generativeai
 folium
 streamlit-folium
-google-generativeai

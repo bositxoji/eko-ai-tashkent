@@ -1,7 +1,1 @@
 streamlit
-streamlit_option_menu
-google-generativeai
-folium
-streamlit-folium
-pandas
-requests

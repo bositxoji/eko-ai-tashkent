@@ -1,13 +1,15 @@
 import streamlit as st
+from fpdf import FPDF
+import base64
 
-# 1. SEO VA SAHIFA SOZLAMALARI
+# 1. SAHIFA SOZLAMALARI
 st.set_page_config(
     page_title="ECO-INSIGHT | Global Monitoring Center",
     page_icon="🌍",
     layout="wide"
 )
 
-# 2. PROFESSIONAL ECO-DIZAYN (CSS) - Barcha elementlar saqlangan
+# 2. PROFESSIONAL DIZAYN (CSS)
 st.markdown("""
     <style>
     .stApp {
@@ -26,7 +28,6 @@ st.markdown("""
         background: rgba(0, 255, 136, 0.08);
         border-color: #00ff88;
         box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
-        transform: translateY(-5px);
     }
     h1, h2, h3 { color: #00ff88 !important; }
     .stLinkButton > a {
@@ -36,70 +37,91 @@ st.markdown("""
         width: 100%;
         text-align: center;
         border-radius: 8px;
-        font-weight: bold;
     }
     .stLinkButton > a:hover {
         background: #00ff88 !important;
         color: black !important;
     }
-    /* Footer dizayni */
-    .footer-container {
-        text-align: center;
-        margin-top: 50px;
-        padding: 30px;
-        border-top: 1px solid rgba(0, 255, 136, 0.2);
+    .pdf-box {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px dashed #00ff88;
     }
     </style>
     """, unsafe_allow_html=True)
 
+# --- PDF GENERATOR FUNKSIYASI ---
+def create_pdf(text):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="ECO-INSIGHT GLOBAL ANALYSIS REPORT", ln=1, align='C')
+    pdf.ln(10)
+    pdf.multi_cell(0, 10, txt=text)
+    pdf.ln(20)
+    pdf.set_font("Arial", size=10)
+    pdf.cell(200, 10, txt="Analyzed by Team Proff. Egamberdiev E.", ln=1, align='R')
+    return pdf.output(dest='S').encode('latin-1')
+
 # --- SAHIFA BOSH QISMI ---
 st.title("🌐 ECO-INSIGHT: GLOBAL EKOLOGIK MONITORING")
-st.markdown("""
-    **Ushbu platforma NASA, IQAIR va Grok AI ma'lumotlari asosida global ekologik holatni tahlil qiladi.**
-    *Maqsadimiz: Sayyoramizning real vaqtdagi holatini hamma uchun ochiq va tushunarli qilish.*
-""")
+st.markdown("**NASA, IQAIR va Grok AI ma'lumotlari asosida tahlil markazi.**")
 
 st.divider()
 
-# --- ASOSIY XIZMATLAR (4 ta ustun) ---
+# --- ASOSIY XIZMATLAR ---
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.markdown('<div class="service-card"><h3>💨 IQAIR</h3><p>Havo sifati va PM2.5 monitoringi. Dunyo shaharlari reytingi.</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="service-card"><h3>💨 IQAIR</h3><p>Havo sifati monitoringi.</p></div>', unsafe_allow_html=True)
     st.link_button("Havoni tekshirish", "https://www.iqair.com")
 
 with col2:
-    st.markdown('<div class="service-card"><h3>🛰️ NASA EARTH</h3><p>Kosmosdan yerning real holati va sun\'iy yo\'ldosh tasvirlari.</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="service-card"><h3>🛰️ NASA EARTH</h3><p>Kosmosdan yer monitoringi.</p></div>', unsafe_allow_html=True)
     st.link_button("NASA tasvirlari", "https://earth.gsfc.nasa.gov")
 
 with col3:
-    st.markdown('<div class="service-card"><h3>🤖 GROK AI</h3><p>Ekologik ma’lumotlarni chuqur tahlil qilish uchun AI yordamchisi.</p></div>', unsafe_allow_html=True)
-    st.link_button("AI Tahlilni boshlash", "https://grok.com/?q=Analyze+the+latest+global+environmental+news+for+today")
+    st.markdown('<div class="service-card"><h3>🤖 GROK AI</h3><p>Chuqur AI tahlil xizmati.</p></div>', unsafe_allow_html=True)
+    st.link_button("Grok AI ni ochish", "https://grok.com/?q=Analyze+global+eco+news")
 
 with col4:
-    st.markdown('<div class="service-card"><h3>🔥 FIRE MAP</h3><p>NASA FIRMS: Dunyo bo‘ylab yong‘inlar va ofatlar monitoringi.</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="service-card"><h3>🔥 FIRE MAP</h3><p>Global yong‘inlar monitoringi.</p></div>', unsafe_allow_html=True)
     st.link_button("Jonli xarita", "https://firms.modaps.eosdis.nasa.gov/map/")
 
 st.divider()
 
-# --- JONLI XARITA (Live Wind & Weather) ---
-st.subheader("🌍 Real vaqtdagi Global Havo Oqimlari (Live)")
-st.markdown("Xaritani aylantirish orqali global shamol yo'nalishlarini kuzating:")
-st.components.v1.iframe("https://earth.nullschool.net/#current/wind/surface/level/orthographic=-296.22,40.06,500", height=600)
+# --- YANGI: PDF HISOBOT TAYYORLASH BO'LIMI ---
+st.subheader("📑 Professional AI Hisobot Generator (PDF)")
+st.markdown("Grok AI dan olingan tahlillarni pastga joylang va PDF shaklida yuklab oling:")
+
+with st.container():
+    st.markdown('<div class="pdf-box">', unsafe_allow_html=True)
+    report_text = st.text_area("Tahlil matnini shu yerga joylang:", height=200, placeholder="Grok AI dan olingan matnni shu yerga kiritasiz...")
+    
+    if st.button("📄 PDF Hisobotni Tayyorlash"):
+        if report_text:
+            pdf_data = create_pdf(report_text)
+            st.download_button(
+                label="📥 PDF-ni yuklab olish",
+                data=pdf_data,
+                file_name="Eco_Insight_Report.pdf",
+                mime="application/pdf"
+            )
+            st.success("Hisobot muvaffaqiyatli tayyorlandi!")
+        else:
+            st.warning("Iltimos, avval matnni kiriting.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
 
-# --- SEO VA MA'LUMOT MATNI ---
-st.subheader("Nega ECO-INSIGHT platformasidan foydalanish kerak?")
-st.write("""
-Bizning platformamiz O'zbekistonda birinchilardan bo'lib global ekologik ma'lumotlarni bitta oynada jamlaydi. 
-IQAir ma'lumotlari orqali havo ifloslanishini, NASA sun'iy yo'ldoshlari orqali iqlim o'zgarishini va 
-Grok AI orqali kelajakdagi ekologik prognozlarni kuzatish mumkin.
-""")
+# --- JONLI XARITA ---
+st.subheader("🌍 Real vaqtdagi Global Havo Oqimlari")
+st.components.v1.iframe("https://earth.nullschool.net/#current/wind/surface/level/orthographic=-296.22,40.06,500", height=500)
 
-# --- FOOTER (Siz aytgan mualliflar qismi) ---
+# --- FOOTER ---
 st.markdown(f"""
-    <div class="footer-container">
+    <div style="text-align: center; margin-top: 50px; padding: 30px; border-top: 1px solid rgba(0, 255, 136, 0.2);">
         <p style="color: rgba(255,255,255,0.6);">© 2026 ECO-INSIGHT Platformasi | Barcha huquqlar himoyalangan.</p>
         <p style="font-size: 1.3rem; font-weight: bold; color: #00ff88;">
             Mualliflar: <span style="color: #00d4ff;">Team Proff. Egamberdiev E.</span>

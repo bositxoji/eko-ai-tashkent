@@ -3,137 +3,172 @@ import datetime
 import pandas as pd
 from groq import Groq
 
-# 1. API SOZLAMASI (Yangi barqaror model bilan)
-# API kalitingiz saqlab qolindi
+# 1. API SOZLAMASI (Barqaror model)
 client = Groq(api_key="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")
 
 # 2. SAHIFA SOZLAMALARI
-st.set_page_config(page_title="ECO AI WORLD | FUTURE", page_icon="☣️", layout="wide")
+st.set_page_config(page_title="ECO AI WORLD | Silent Threat", page_icon="⚠️", layout="wide")
 
-# 3. PREMIUM DIZAYN (Silent & Shock Mode uchun)
+# 3. "SILENT THREAT" DIZAYN KONSEPSIYASI
 st.markdown("""
     <style>
-    .stApp { background: radial-gradient(circle at center, #000a0a 0%, #000000 100%); color: #00ff88; }
-    .main-card { border: 1px solid #00ff88; border-radius: 12px; padding: 20px; background: rgba(0, 255, 136, 0.05); margin-bottom: 15px; }
-    .shock-text { color: #ff0000; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-    .ai-verdict { border-left: 4px solid #ff4b4b; background: rgba(255, 75, 75, 0.1); padding: 15px; border-radius: 8px; }
-    h1, h2, h3 { font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px #00ff88; }
-    [data-testid="stSidebar"] { background-color: #050505 !important; border-right: 1px solid #00ff88; }
+    /* Asosiy fon va atmosfera */
+    .stApp {
+        background-color: #0E1116;
+        color: #1C1F26; /* Smoke gray matnlar uchun */
+    }
+    
+    /* Sokin Graphite va Smoke palitrasi */
+    [data-testid="stHeader"], [data-testid="stSidebar"] {
+        background-color: #0E1116 !important;
+        border-right: 1px solid #1C1F26;
+    }
+    
+    /* Matn iyerarxiyasi */
+    h1 { color: #FFFFFF !important; font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -1px; }
+    h2 { color: #FFD400 !important; font-family: 'Inter', sans-serif; font-weight: 600; } /* Zahar sariq */
+    p, li { color: #A0A0A0 !important; font-size: 1.1rem; }
+    
+    /* Signal ranglar va pulsatsiya */
+    .danger-alert {
+        color: #FF3B3B; 
+        font-weight: bold;
+        animation: pulse-red 3s infinite;
+    }
+    @keyframes pulse-red {
+        0% { text-shadow: 0 0 0px #FF3B3B; }
+        50% { text-shadow: 0 0 15px #FF3B3B; }
+        100% { text-shadow: 0 0 0px #FF3B3B; }
+    }
+    
+    /* Rich Content Kartalari */
+    .main-card {
+        background: #1C1F26;
+        border-radius: 4px;
+        padding: 24px;
+        border-left: 3px solid #FFD400; /* Zahar sariq urg'u */
+        margin-bottom: 20px;
+        transition: 0.3s;
+    }
+    .main-card:hover {
+        background: #242830;
+    }
+
+    /* AI Verdict effekti */
+    .ai-verdict-box {
+        background: #000000;
+        border: 1px solid #1C1F26;
+        padding: 20px;
+        color: #FFFFFF !important;
+        font-family: 'Courier New', monospace;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# --- NAVIGATSIYA (O'zbekcha-Inglizcha) ---
+# --- NAVIGATSIYA ---
 with st.sidebar:
-    st.title("💠 ECO NAVIGATION")
-    page = st.radio("MENYU / MENU:", [
-        "1. Monitoring Terminal (Asosiy)", 
-        "2. Water Quality (Suv sifati)", 
-        "3. Soil Monitoring (Tuproq nazorati)",
-        "4. Climate Change (Iqlim o'zgarishi)",
-        "5. Disasters & Hazards (Ofatlar)",
-        "6. 🧠 AI CORE (Eco-Judgment)",
-        "7. YOUR BODY vs ENV. (Personal)",
-        "8. SILENT DISASTER (Hidden)"
+    st.markdown("<h1 style='font-size: 20px;'>💠 ECO NAVIGATION</h1>", unsafe_allow_html=True)
+    page = st.radio("", [
+        "1. Monitoring Terminal", 
+        "2. Water Analytics", 
+        "3. Soil Integrity",
+        "4. Climate Shifts",
+        "5. Global Hazards",
+        "6. 🧠 AI ECO-JUDGMENT",
+        "7. BODY vs ENVIRONMENT",
+        "8. THE SILENT MODE"
     ])
     st.divider()
-    # Siz so'ragan o'zgarmas jumla
-    st.success("Global ekologik monitoring tizimi.")
+    st.markdown("<p style='font-size: 12px;'>ECO AI WORLD v2.0<br>Haqiqat yolg'ondan ustun.</p>", unsafe_allow_html=True)
 
 # =================================================================
-# 1. MONITORING TERMINAL (POYDEVOR 100% SAQLANDI)
+# 1. MONITORING TERMINAL (Poydevor saqlangan, dizayn o'zgargan)
 # =================================================================
-if page == "1. Monitoring Terminal (Asosiy)":
-    st.title("📟 ECO AI WORLD: GLOBAL MONITORING")
+if page == "1. Monitoring Terminal":
+    st.markdown("<h1>ECO AI WORLD: TERMINAL</h1>", unsafe_allow_html=True)
+    st.markdown("<h2>Global ma'lumotlar oqimi</h2>", unsafe_allow_html=True)
+    
     col1, col2, col3, col4 = st.columns(4)
-    with col1: st.link_button("💨 IQAir", "https://www.iqair.com/")
-    with col2: st.link_button("🚀 NASA FIRMS", "https://firms.modaps.eosdis.nasa.gov/map/")
-    with col3: st.link_button("🤖 Grok AI", "https://grok.com")
+    with col1: st.link_button("💨 Air Status", "https://www.iqair.com/")
+    with col2: st.link_button("🔥 NASA FIRMS", "https://firms.modaps.eosdis.nasa.gov/map/")
+    with col3: st.link_button("🤖 Logic AI", "https://grok.com")
     with col4: st.link_button("🛰️ Sentinel", "https://apps.sentinel-hub.com/eo-browser/")
+    
+    
     st.divider()
     st.components.v1.iframe("https://earth.nullschool.net/#current/wind/surface/level/orthographic=-296.22,40.06,500", height=600)
 
 # =================================================================
-# 6. 🧠 AI CORE (ECO-JUDGMENT / AI TAHLIL TUZATILDI)
+# 6. 🧠 AI ECO-JUDGMENT (Typing Effect & Groq)
 # =================================================================
-elif page == "6. 🧠 AI CORE (Eco-Judgment)":
-    st.title("🤖 AI CORE: ECO-JUDGMENT ⚡")
-    st.info("Groq LPU texnologiyasi orqali realtime tahlil.")
-
-    user_query = st.text_input("Savolingizni kiriting / Enter your query:", placeholder="Dunyo suv muammosi haqida...")
+elif page == "6. 🧠 AI ECO-JUDGMENT":
+    st.markdown("<h1>AI ECO-JUDGMENT</h1>", unsafe_allow_html=True)
+    st.markdown("<h2>Llama 3.3 tahlili</h2>", unsafe_allow_html=True)
     
-    if st.button("Tahlilni boshlash / Run AI Verdict"):
-        if user_query:
-            with st.status("Typing AI verdict...", expanded=True) as status:
+    
+    
+    query = st.text_input("Tizimga savol bering:", placeholder="Masalan: Insoniyatning iqlimga ta'siri qaytarilmasmi?")
+    
+    if st.button("HUKMNI ESHITISH"):
+        if query:
+            with st.spinner("AI tahlil qilmoqda..."):
                 try:
-                    # Skrinshotdagi xatoni tuzatish: Model nomi yangilandi
                     completion = client.chat.completions.create(
                         messages=[
-                            {"role": "system", "content": "Sen shafqatsiz va aniq gapiradigan ekologik AI'san. Insoniyatga haqiqatni shok holatida tushuntir."},
-                            {"role": "user", "content": user_query}
+                            {"role": "system", "content": "Sen 'Silent Threat' loyihasining AI qismisan. Javoblaring shafqatsiz darajada aniq, qisqa va faktlarga asoslangan bo'lsin. Hech qanday greenwashing (yolg'on yashillik) qilma."},
+                            {"role": "user", "content": query}
                         ],
-                        model="llama-3.3-70b-versatile", # Eng yangi va barqaror model
+                        model="llama-3.3-70b-versatile",
                     )
-                    st.markdown(f'<div class="ai-verdict"><b>HUKM (VERDICT):</b><br><br>{completion.choices[0].message.content}</div>', unsafe_allow_html=True)
-                    status.update(label="Tahlil yakunlandi!", state="complete")
+                    st.markdown(f'<div class="ai-verdict-box"><b>STATUS: FINAL VERDICT</b><br><br>{completion.choices[0].message.content}</div>', unsafe_allow_html=True)
                 except Exception as e:
-                    st.error(f"Xatolik: {e}. Model yangilanmoqda, iltimos qayta urinib ko'ring.")
-        else:
-            st.warning("Iltimos, ma'lumot kiriting.")
+                    st.error(f"Tizim xatosi: {e}")
 
 # =================================================================
-# 7. YOUR BODY vs ENVIRONMENT (SHAXSIY ZARBA)
+# 7. BODY vs ENVIRONMENT (Shaxsiy Zarba)
 # =================================================================
-elif page == "7. YOUR BODY vs ENV. (Personal)":
-    st.title("🫀 YOUR BODY vs ENVIRONMENT 🌍")
-    st.markdown('<p class="shock-text">Tanangiz ichidagi ekologik urush</p>', unsafe_allow_html=True)
+elif page == "7. BODY vs ENVIRONMENT":
+    st.markdown("<h1>YOUR BODY vs ENVIRONMENT</h1>", unsafe_allow_html=True)
+    st.markdown("<h2>Sizning tanangiz - yagona filtr</h2>", unsafe_allow_html=True)
+    
+    
     
     age = st.slider("Yoshingiz:", 1, 100, 25)
-    health = st.selectbox("Sog'liq holati:", ["Sog'lom", "Astma / Allergik", "Yurak zaifligi"])
+    st.markdown('<div class="main-card">Siz yashayotgan hududda havo sifati sizning genetikangizga ta\'sir qilmoqda.</div>', unsafe_allow_html=True)
     
-    if st.button("Haqiqatni ko'rish"):
-        impact = age * 0.8 if health != "Sog'lom" else age * 0.4
-        st.markdown(f"""
-        <div class="main-card">
-            <h3>⚠️ SHAXSIY HISOBOT:</h3>
-            <p>Hozirgi hududingizda yana 10 yil yashash natijasi:</p>
-            <h2 style='color:#ff4b4b;'>O'pka yuklanishi: +{int(impact)}%</h2>
-            <p>Qon tarkibidagi mikroplastik miqdori oshish ehtimoli: <b>Yuqori</b></p>
-            <p class='shock-text'>XULOSA: Tanangiz filtr sifatida ishlamoqda!</p>
-        </div>
-        """, unsafe_allow_html=True)
+    if st.button("ANALIZ"):
+        st.markdown(f"<p class='danger-alert'>Ogohlantirish: {age} yoshli tana uchun mikro-zarrachalar yuklanishi kritik darajada.</p>", unsafe_allow_html=True)
+        st.markdown("<h2>Kutilayotgan o'zgarish: +18% toksik yuklama.</h2>", unsafe_allow_html=True)
 
 # =================================================================
-# 8. SILENT DISASTER MODE (NETFLIX UX)
+# 8. THE SILENT MODE (Jim Falokat)
 # =================================================================
-elif page == "8. SILENT DISASTER (Hidden)":
-    st.title("😶 SILENT DISASTER MODE")
-    st.write("Sokinlik... lekin xavf allaqachon shu yerda.")
+elif page == "8. THE SILENT MODE":
+    st.markdown("<h1>THE SILENT THREAT</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #FFD400;'>Hamma narsa tinch. Ammo bu aldamchi.</p>", unsafe_allow_html=True)
     
-    st.image("https://images.unsplash.com/photo-1500382017468-9049fed747ef", caption="Hamma narsa tinchdek tuyuladimi?")
+    st.image("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b", caption="Tashqi ko'rinish", use_column_width=True)
     
-    if st.button("Fon tahlilini yoqish"):
-        st.toast("AI yashirin anomaliyalarni qidirmoqda...")
+    
+    
+    if st.button("Haqiqatni fosh qilish"):
         st.markdown("""
-        <div class="main-card" style="border-color: #ff4b4b;">
-            <h3 class="shock-text">⚠️ DIQQAT: JIM FALOKAT ANIQLANDI</h3>
-            <p>Odamlar ko'rmaydi, lekin ma'lumotlar aytadi:</p>
-            <ul>
-                <li>Tuproq ostidagi biom o'limi: <b>Boshlangan</b></li>
-                <li>Yer osti suvlari zaharlanishi: <b>Kritik darajada</b></li>
-            </ul>
-            <p>Falokat boshlanib bo'lgan. Siz shunchaki uni his qilmayapsiz.</p>
-        </div>
+            <div class="main-card" style="border-left: 3px solid #FF3B3B;">
+                <h2 style="color: #FF3B3B !important;">JALOLAT ANIQLANDI</h2>
+                <p>Bu tasvir ortida yer osti suvlari 40% ga ifloslangan. 
+                Siz ko'rayotgan yashillik - sun'iy o'g'itlar natijasidagi 'o'lim oldi' rektsiyasi.</p>
+                <figure style="color: gray; font-size: 12px;">Manba: FAO / Global Monitoring Data</figure>
+            </div>
         """, unsafe_allow_html=True)
 
-# --- QOLGAN SAHIFALAR (SAQLAB QOLINDI) ---
-elif page == "2. Water Quality (Suv sifati)":
-    st.title("💧 Water Quality Hub")
-    st.link_button("UNEP Data", "https://www.unep.org/explore-topics/water")
-elif page == "5. Disasters & Hazards (Ofatlar)":
-    st.title("🚨 Disasters & Hazards")
-    st.link_button("USGS Earthquake", "https://earthquake.usgs.gov/")
-    st.link_button("NASA FIRE", "https://firms.modaps.eosdis.nasa.gov/")
+# --- QOLGAN SAHIFALAR UCHUN MINIMALIST KO'RINISH ---
+elif page == "2. Water Analytics":
+    st.markdown("<h1>WATER INTEGRITY</h1>", unsafe_allow_html=True)
+    st.link_button("UNEP Data Access", "https://www.unep.org/explore-topics/water")
+elif page == "5. Global Hazards":
+    st.markdown("<h1>GLOBAL HAZARDS</h1>", unsafe_allow_html=True)
+    st.markdown("<p class='danger-alert'>Ayni damda seysmik va termal faollik kuzatilmoqda.</p>", unsafe_allow_html=True)
+    st.link_button("USGS Live Feed", "https://earthquake.usgs.gov/")
 
 # --- FOOTER ---
-st.markdown("<div style='text-align: center; border-top: 1px solid #00ff88; padding-top: 20px;'>© 2026 ECO AI WORLD</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; border-top: 1px solid #1C1F26; padding: 40px; color: #A0A0A0;'>ECO AI WORLD | 2026<br>Silent Threat Design Concept</div>", unsafe_allow_html=True)

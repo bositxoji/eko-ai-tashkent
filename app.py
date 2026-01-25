@@ -1,123 +1,57 @@
-import os
-from flask import Flask, render_template_string
+import streamlit as st
 
-app = Flask(__name__)
+# Sahifa sarlavhasi va dizayni
+st.set_page_config(page_title="ECO-ANALYSIS PORTAL", layout="wide")
 
-HTML = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>GLOBAL ECO PLATFORM</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+# CSS orqali tugmalarni chiroyli va katta qilish
+st.markdown("""
+    <style>
+    .stButton>button {
+        width: 100%;
+        height: 80px;
+        font-size: 24px !important;
+        font-weight: bold;
+        border-radius: 15px;
+        border: 2px solid #00d4ff;
+        background-color: #0e1117;
+        color: white;
+    }
+    .stButton>button:hover {
+        background-color: #00d4ff;
+        color: black;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0b0e14;
-    color: #ffffff;
-}
+st.title("🌐 Global Ekologik Tahlil Markazi")
+st.write("Barcha tizimlar faol. Kerakli platformani tanlang:")
 
-header {
-    background: #101522;
-    padding: 15px 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+# 3 ta ustun yaratamiz
+col1, col2, col3 = st.columns(3)
 
-.menu-btn {
-    background: #00d2ff;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-}
+with col1:
+    st.header("💨 Havo")
+    st.write("IQAir - Global havo sifati monitoringi")
+    st.link_button("IQAir saytiga o'tish", "https://www.iqair.com")
 
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: -260px;
-    width: 260px;
-    height: 100%;
-    background: #141a2a;
-    padding-top: 60px;
-    transition: 0.3s;
-}
+with col2:
+    st.header("🚀 NASA")
+    st.write("NASA Earth - Yer monitoringi va sun'iy yo'ldosh ma'lumotlari")
+    st.link_button("NASA Earth saytiga o'tish", "https://earth.nasa.gov")
 
-.sidebar a {
-    display: block;
-    padding: 15px 25px;
-    color: #ffffff;
-    text-decoration: none;
-    border-bottom: 1px solid #222;
-}
+with col3:
+    st.header("🤖 Grok AI")
+    st.write("X (Twitter) Grok - Ma'lumotlarni tahlil qilish uchun")
+    st.link_button("Grok AI ni ochish", "https://grok.com")
 
-.sidebar a:hover {
-    background: #00d2ff;
-    color: #000;
-}
+st.divider()
 
-.main {
-    padding: 30px;
-}
+# Qo'shimcha tahlil bo'limi
+st.subheader("📊 Ma'lumotlar tahlili qanday amalga oshiriladi?")
+st.info("""
+1. **IQAir** orqali hududingizdagi real vaqt rejimida havo holatini aniqlang.
+2. **NASA** platformasidan global iqlim o'zgarishi xaritalarini oling.
+3. To'plangan ma'lumotlarni **Grok AI** ga yuborib, chuqur tahlil va prognozlarni oling.
+""")
 
-iframe {
-    width: 100%;
-    height: 75vh;
-    border: none;
-    border-radius: 12px;
-    background: #000;
-}
-</style>
-
-<script>
-function toggleMenu() {
-    let menu = document.getElementById("sidebar");
-    menu.style.left = (menu.style.left === "0px") ? "-260px" : "0px";
-}
-
-function loadSite(url) {
-    document.getElementById("contentFrame").src = url;
-}
-</script>
-</head>
-
-<body>
-
-<header>
-    <h2>🌍 GLOBAL ECO PLATFORM</h2>
-    <button class="menu-btn" onclick="toggleMenu()">☰ MENU</button>
-</header>
-
-<div id="sidebar" class="sidebar">
-    <a href="#" onclick="loadSite('https://www.iqair.com')">1️⃣ IQAir</a>
-    <a href="#" onclick="loadSite('https://www.unep.org')">2️⃣ UNEP</a>
-    <a href="#" onclick="loadSite('https://climate.nasa.gov')">3️⃣ NASA</a>
-    <a href="#" onclick="loadSite('https://earth.google.com/web')">4️⃣ Google Earth</a>
-    <a href="https://gemini.google.com" target="_blank">5️⃣ Gemini (external)</a>
-</div>
-
-<div class="main">
-    <p style="opacity:0.7;">
-        Ekologik monitoring va global manbalar bilan integratsiyalashgan platforma.
-    </p>
-
-    <iframe id="contentFrame"
-        src="https://www.iqair.com">
-    </iframe>
-</div>
-
-</body>
-</html>
-"""
-
-@app.route("/")
-def index():
-    return render_template_string(HTML)
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+st.success("Tizim 100% tayyor. Renderda 'Deploy' bosing.")

@@ -3,143 +3,161 @@ import datetime
 import pandas as pd
 from groq import Groq
 
-# 1. API SOZLAMASI
+# 1. API SOZLAMASI (Yangi barqaror model)
 client = Groq(api_key="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")
 
 # 2. SAHIFA SOZLAMALARI
-st.set_page_config(page_title="ECO AI WORLD | 2nd Floor", page_icon="🏗️", layout="wide")
+st.set_page_config(page_title="ECO AI WORLD | Enterprise", page_icon="🧬", layout="wide")
 
-# 3. "SILENT THREAT" DIZAYN KONSEPSIYASI (2-qavat elementlari bilan)
+# 3. "SILENT THREAT" PREMIUM DIZAYNI
 st.markdown("""
     <style>
     .stApp { background-color: #0E1116; color: #A0A0A0; }
     [data-testid="stSidebar"] { background-color: #050505 !important; border-right: 1px solid #1C1F26; }
     
-    /* Mualliflar bo'limi - Menyu osti */
+    /* Mualliflar bloki */
     .author-box {
-        padding: 12px;
-        background: #1C1F26;
-        border-radius: 4px;
-        border: 1px solid #FFD400;
+        padding: 15px;
+        background: rgba(28, 31, 38, 0.8);
+        border-radius: 8px;
+        border-left: 3px solid #FFD400;
         margin-top: 10px;
-        font-family: 'Inter', sans-serif;
+        margin-bottom: 20px;
     }
-    .author-title { color: #FFD400; font-size: 11px; font-weight: bold; margin: 0; }
-    .author-name { color: #FFFFFF; font-size: 13px; margin-bottom: 5px; }
+    .author-title { color: #FFD400; font-size: 11px; font-weight: bold; margin: 0; text-transform: uppercase; }
+    .author-name { color: #FFFFFF; font-size: 13px; margin-bottom: 8px; font-weight: 500; }
 
-    h1 { color: #FFFFFF !important; text-shadow: 0 0 10px rgba(0,255,136,0.2); }
+    h1 { color: #FFFFFF !important; font-family: 'Inter', sans-serif; text-shadow: 0 0 10px rgba(0,255,136,0.2); }
     h2 { color: #FFD400 !important; }
-    .main-card { background: #1C1F26; padding: 20px; border-radius: 4px; border-left: 4px solid #FF3B3B; margin-bottom: 20px; }
-    .stButton>button { background-color: #1C1F26; color: #FFD400; border: 1px solid #FFD400; width: 100%; }
-    .stButton>button:hover { background-color: #FFD400; color: #000; }
+    .main-card { background: #1C1F26; padding: 25px; border-radius: 8px; border-left: 4px solid #FF3B3B; margin-bottom: 20px; }
+    .danger-alert { color: #FF3B3B; font-weight: bold; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
     </style>
     """, unsafe_allow_html=True)
 
-# --- NAVIGATSIYA (2-qavat qo'shildi) ---
+# --- NAVIGATSIYA (Original 8 ta sahifa tartibi) ---
 with st.sidebar:
-    st.markdown("<h1>💠 ECO WORLD</h1>", unsafe_allow_html=True)
+    st.markdown("<h1>💠 ECO NAVIGATION</h1>", unsafe_allow_html=True)
     
     # MUALLIFLAR TARKIBI
     st.markdown("""
     <div class="author-box">
-        <p class="author-title">ILMIY RAHBAR:</p>
+        <p class="author-title">Ilmiy rahbar:</p>
         <p class="author-name">E. EGAMBERDIEV</p>
-        <p class="author-title">MUALLIF:</p>
+        <p class="author-title">Muallif:</p>
         <p class="author-name">A. ATAXOJAYEV</p>
-        <p class="author-title">TEAM:</p>
+        <p class="author-title">Team:</p>
         <p class="author-name">Egamberdiev</p>
     </div>
     """, unsafe_allow_html=True)
     
     st.divider()
-    page = st.radio("QAVATLAR / FLOORS:", [
-        "1-QAVAT: Monitoring Terminal", 
-        "1-QAVAT: AI Eco-Judgment",
-        "1-QAVAT: Body vs Environment",
-        "1-QAVAT: The Silent Mode",
-        "2-QAVAT: Eco-Time Machine ⏳",
-        "2-QAVAT: Survival Guide 🛡️",
-        "2-QAVAT: Carbon Tax Calc 💸"
+    page = st.radio("MENYU / MENU:", [
+        "1. Monitoring Terminal (Asosiy)", 
+        "2. Water Quality (Suv sifati)", 
+        "3. Soil Monitoring (Tuproq nazorati)",
+        "4. Climate Change (Iqlim o'zgarishi)",
+        "5. Disasters & Hazards (Tabiiy ofatlar)",
+        "6. 🧠 AI CORE (Llama 3 Yadro)",
+        "7. YOUR BODY vs ENV. (Shaxsiy xavf)",
+        "8. SILENT DISASTER (Jim falokat)"
     ])
-    st.success("Tizim barqaror ishlamoqda.")
+    st.divider()
+    st.success("Global ekologik monitoring tizimi.")
 
 # =================================================================
-# 1-QAVAT FUNKSIYALARI (O'zgarmas saqlangan)
+# 1. MONITORING TERMINAL (ASOSIY POYDEVOR QAYTDI)
 # =================================================================
-if "1-QAVAT" in page:
-    if "Monitoring" in page:
-        st.markdown("<h1>ECO TERMINAL (Poydevor)</h1>", unsafe_allow_html=True)
-        st.components.v1.iframe("https://earth.nullschool.net/#current/wind/surface/level/orthographic=-296.22,40.06,500", height=600)
+if page == "1. Monitoring Terminal (Asosiy)":
+    st.title("📟 ECO AI WORLD: GLOBAL MONITORING")
+    st.markdown("<h2>Real-vaqt rejimida global ekologik razvedka tizimi.</h2>", unsafe_allow_html=True)
     
-    elif "Judgment" in page:
-        st.markdown("<h1>AI ECO-JUDGMENT</h1>", unsafe_allow_html=True)
-        query = st.text_input("Hukm uchun savol bering:")
-        if st.button("ANALIZ"):
-            completion = client.chat.completions.create(
-                messages=[{"role": "system", "content": "Sen shafqatsiz ekologsan."}, {"role": "user", "content": query}],
-                model="llama-3.3-70b-versatile"
-            )
-            st.markdown(f"<div style='background:black; padding:20px;'>{completion.choices[0].message.content}</div>", unsafe_allow_html=True)
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown('<div class="main-card"><h3>💨 IQAIR</h3><p>Havo sifati monitoringi.</p></div>', unsafe_allow_html=True)
+        st.link_button("Launch IQAir", "https://www.iqair.com/")
+    with col2:
+        st.markdown('<div class="main-card"><h3>🚀 NASA FIRMS</h3><p>Yong\'inlar va ofatlar.</p></div>', unsafe_allow_html=True)
+        st.link_button("NASA FIRMS", "https://firms.modaps.eosdis.nasa.gov/map/")
+    with col3:
+        st.markdown('<div class="main-card"><h3>🤖 GROK AI</h3><p>AI Analitika tizimi.</p></div>', unsafe_allow_html=True)
+        st.link_button("Grok Chat", "https://grok.com")
+    with col4:
+        st.markdown('<div class="main-card"><h3>🛰️ SENTINEL</h3><p>Sputnik tasvirlari.</p></div>', unsafe_allow_html=True)
+        st.link_button("Sentinel-2 Explorer", "https://apps.sentinel-hub.com/eo-browser/")
+
+    st.divider()
+    st.subheader("🌍 Jonli Global Oqimlar (Wind / Ocean / Particulates)")
+    st.components.v1.iframe("https://earth.nullschool.net/#current/wind/surface/level/orthographic=-296.22,40.06,500", height=600)
 
 # =================================================================
-# 2-QAVAT: ECO-TIME MACHINE (YANGI)
+# 6. 🧠 AI CORE (LLAMA 3 TAHLIL TUZATILDI)
 # =================================================================
-elif page == "2-QAVAT: Eco-Time Machine ⏳":
-    st.markdown("<h1>ECO-TIME MACHINE</h1>", unsafe_allow_html=True)
-    st.markdown("<h2>Kelajakni hozir ko'ring</h2>", unsafe_allow_html=True)
+elif page == "6. 🧠 AI CORE (Llama 3 Yadro)":
+    st.title("🤖 AI CORE: Llama 3 Intelligence")
+    st.markdown('<div class="main-card"><h4>Llama 3: Ekologik Big Data Eksperti</h4><p>Savollaringizga soniyalar ichida ilmiy javob oling.</p></div>', unsafe_allow_html=True)
+
+    user_input = st.text_input("Ekologik savol yoki prognoz so'rang:", placeholder="Masalan: Orol dengizi hududida 2030-yilda havo harorati qanday bo'ladi?")
     
-    
-    
-    target_year = st.select_slider("Yilni tanlang:", options=[2030, 2050, 2075, 2100])
-    
-    if st.button(f"{target_year}-yilga sayohat"):
-        with st.spinner("AI vaqt chizig'ini hisoblamoqda..."):
-            completion = client.chat.completions.create(
-                messages=[{"role": "system", "content": "Sen vaqt mashinasisan. Tanlangan yildagi ekologik holatni dahshatli va real tasvirlab ber."}, 
-                          {"role": "user", "content": f"{target_year}-yilda O'zbekiston va dunyo ekologiyasi qanday?"}],
-                model="llama-3.3-70b-versatile"
-            )
-            st.markdown(f"<div class='main-card'><h3>STSENARIY: {target_year}</h3>{completion.choices[0].message.content}</div>", unsafe_allow_html=True)
+    if st.button("Tahlilni boshlash / Run AI"):
+        if user_input:
+            with st.spinner('Llama 3 oylamoqda...'):
+                try:
+                    # Model nomi llama-3.3-70b-versatile ga o'zgartirildi (eng barqarori)
+                    completion = client.chat.completions.create(
+                        messages=[
+                            {"role": "system", "content": "Sen Silent Threat loyihasining professional AI ekologisan. Javoblaring aniq, ilmiy va biroz bezovta qiluvchi haqiqatlarga asoslangan bo'lsin."},
+                            {"role": "user", "content": user_input}
+                        ],
+                        model="llama-3.3-70b-versatile",
+                    )
+                    response = completion.choices[0].message.content
+                    st.markdown(f'<div style="background:black; padding:20px; border-left: 5px solid #FFD400; font-family:monospace; color:white;"><b>AI HUKMI:</b><br><br>{response}</div>', unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"Xato yuz berdi: {e}")
+        else:
+            st.warning("Iltimos, savol kiriting.")
 
 # =================================================================
-# 2-QAVAT: SURVIVAL GUIDE (YANGI)
+# 7. YOUR BODY vs ENVIRONMENT (SHAXSIY XAVF)
 # =================================================================
-elif page == "2-QAVAT: Survival Guide 🛡️":
-    st.markdown("<h1>SURVIVAL GUIDE AI</h1>", unsafe_allow_html=True)
-    st.markdown("<h2>Ekologik ofatda omon qolish qoidalari</h2>", unsafe_allow_html=True)
+elif page == "7. YOUR BODY vs ENV. (Shaxsiy xavf)":
+    st.title("🫀 YOUR BODY vs ENVIRONMENT 🌍")
+    st.markdown('<p class="danger-alert">Tanangiz tashqi muhit bilan urushda.</p>', unsafe_allow_html=True)
     
+        
+    age = st.number_input("Yoshingiz:", 1, 100, 25)
+    st.markdown('<div class="main-card">Sizning tanangiz hozirgi havoda filtr vazifasini o\'tamoqda.</div>', unsafe_allow_html=True)
     
-    
-    scenario = st.selectbox("Ofat turini tanlang:", ["Suv toshqini", "Havo zaharlanishi", "Ekstremal issiqlik", "Oziq-ovqat tanqisligi"])
-    
-    if st.button("Yo'riqnomani olish"):
-        completion = client.chat.completions.create(
-            messages=[{"role": "system", "content": "Sen ekstremal vaziyatlarda omon qolish bo'yicha mutaxassis AI'san."}, 
-                      {"role": "user", "content": f"{scenario} paytida qanday tirik qolish mumkin?"}],
-            model="llama-3.3-70b-versatile"
-        )
-        st.markdown(f"<div class='main-card'><h3>QO'LLANMA:</h3>{completion.choices[0].message.content}</div>", unsafe_allow_html=True)
+    if st.button("Xavfni hisoblash"):
+        st.subheader(f"10 yillik prognoz: O'pka yuklanishi +{age*0.6}% ga ortishi mumkin.")
 
 # =================================================================
-# 2-QAVAT: CARBON TAX CALC (YANGI)
+# 8. SILENT DISASTER (JIM FALOKAT)
 # =================================================================
-elif page == "2-QAVAT: Carbon Tax Calc 💸":
-    st.markdown("<h1>CARBON TAX CALCULATOR</h1>", unsafe_allow_html=True)
-    st.markdown("<h2>Tabiatga yetkazgan zararingizni pulda hisoblang</h2>", unsafe_allow_html=True)
+elif page == "8. SILENT DISASTER (Jim falokat)":
+    st.title("🤫 THE SILENT THREAT")
+    st.markdown("<p style='color: #FFD400;'>Hamma narsa tinchdek tuyuladi. Ammo ma'lumotlar boshqa narsani aytmoqda.</p>", unsafe_allow_html=True)
     
+    st.image("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b", use_container_width=True)
     
-
-    km = st.number_input("Kunlik mashina haydash (km):", 0, 500, 20)
-    meat = st.checkbox("Bugun go'sht iste'mol qildingizmi?")
-    
-    if st.button("Hisoblash"):
-        tax = (km * 0.2) + (15 if meat else 0)
-        st.markdown(f"""
+    if st.button("Yashirin xavfni ko'rish"):
+        st.markdown("""
         <div class="main-card">
-            <h3>KUNLIK JURM: ${tax}</h3>
-            <p>Siz bugun tabiatdan shuncha qiymatdagi resursni tekinga o'g'irladingiz.</p>
+            <h3 class="danger-alert">🔴 STATUS: KRITIK</h3>
+            <p>Siz ko'rayotgan manzara ostida tuproq degradatsiyasi 60% dan oshgan. Mikroplastiklar allaqachon ekotizimning bir qismiga aylangan.</p>
         </div>
         """, unsafe_allow_html=True)
 
+# QOLGAN SAHIFALAR (2, 3, 4, 5)
+elif page == "2. Water Quality (Suv sifati)":
+    st.title("💧 Water Quality Hub")
+    st.link_button("UNEP Water", "https://www.unep.org/explore-topics/water")
+    st.link_button("World Bank Data", "https://datacatalog.worldbank.org/")
+elif page == "5. Disasters & Hazards (Tabiiy ofatlar)":
+    st.title("🚨 Tabiiy ofatlar monitoringi")
+    st.link_button("USGS Earthquake", "https://earthquake.usgs.gov/")
+    st.link_button("NASA FIRMS", "https://firms.modaps.eosdis.nasa.gov/")
+
 # --- FOOTER ---
-st.markdown("<div style='text-align: center; border-top: 1px solid #1C1F26; padding: 20px;'>ECO AI WORLD | Team Egamberdiev</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; border-top: 1px solid #1C1F26; padding: 20px;'>© 2026 ECO AI WORLD | Team Egamberdiev</div>", unsafe_allow_html=True)

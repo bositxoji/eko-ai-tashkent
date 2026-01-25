@@ -1,114 +1,92 @@
 import streamlit as st
 
-# 1. SEO va Sahifa sozlamalari
+# 1. SEO VA SAHIFA SOZLAMALARI (Google qidiruvi uchun)
 st.set_page_config(
     page_title="ECO-INSIGHT | Global Monitoring Center",
-    page_icon="🌱",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+    page_icon="🌍",
+    layout="wide"
 )
 
-# 2. Professional Dizayn (CSS)
+# 2. PROFESSIONAL ECO-DIZAYN (CSS)
 st.markdown("""
     <style>
-    /* Asosiy fon va matn */
     .stApp {
-        background: linear-gradient(135deg, #0a0f0d 0%, #020205 100%);
-        color: #e0e0e0;
+        background: linear-gradient(180deg, #050a05 0%, #000000 100%);
+        color: #e0f2f1;
     }
-    
-    /* Kartalar uslubi */
     .service-card {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 20px;
-        padding: 25px;
-        border: 1px solid rgba(0, 212, 255, 0.2);
-        transition: 0.3s;
-        height: 250px;
+        background: rgba(0, 255, 136, 0.03);
+        border: 1px solid rgba(0, 255, 136, 0.2);
+        border-radius: 15px;
+        padding: 20px;
+        transition: 0.4s;
     }
     .service-card:hover {
+        background: rgba(0, 255, 136, 0.08);
         border-color: #00ff88;
-        box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
-        transform: translateY(-5px);
+        box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
     }
-    
-    /* Sarlavhalar */
-    h1, h2, h3 {
-        color: #00ff88 !important;
-        font-family: 'Orbitron', sans-serif;
-    }
-    
-    /* Tugmalar */
+    h1, h2, h3 { color: #00ff88 !important; }
     .stLinkButton > a {
-        background: linear-gradient(90deg, #00ff88 0%, #00d4ff 100%) !important;
-        color: black !important;
-        font-weight: bold !important;
-        border-radius: 10px !important;
-        border: none !important;
+        background: transparent !important;
+        border: 1px solid #00ff88 !important;
+        color: #00ff88 !important;
+        width: 100%;
         text-align: center;
-        display: block;
+        border-radius: 8px;
+    }
+    .stLinkButton > a:hover {
+        background: #00ff88 !important;
+        color: black !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# Sarlavha qismi
-st.title("🌱 ECO-INSIGHT GLOBAL PORTAL")
-st.markdown("#### *Dunyo ekologiyasini real vaqt rejimida kuzatish va tahlil qilish tizimi*")
+# --- SAHIFA BOSH QISMI ---
+st.title("🌐 ECO-INSIGHT: GLOBAL EKOLOGIK MONITORING")
+st.markdown("""
+    **Ushbu platforma NASA, IQAIR va Grok AI ma'lumotlari asosida global ekologik holatni tahlil qiladi.**
+    *Maqsadimiz: Sayyoramizning real vaqtdagi holatini hamma uchun ochiq va tushunarli qilish.*
+""")
 
 st.divider()
 
-# --- XIZMATLAR QATORI ---
+# --- ASOSIY XIZMATLAR ---
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.markdown("""<div class="service-card">
-        <h3>💨 IQAIR</h3>
-        <p>Havo sifati, PM2.5 zarralari va shahar reytinglari.</p>
-    </div>""", unsafe_allow_html=True)
+    st.markdown('<div class="service-card"><h3>💨 IQAIR</h3><p>Havo sifati va PM2.5 monitoringi.</p></div>', unsafe_allow_html=True)
     st.link_button("Havoni tekshirish", "https://www.iqair.com")
 
 with col2:
-    st.markdown("""<div class="service-card">
-        <h3>🛰️ NASA EARTH</h3>
-        <p>Sun'iy yo'ldosh tasvirlari va global harorat o'zgarishi.</p>
-    </div>""", unsafe_allow_html=True)
-    st.link_button("Kosmosdan ko'rish", "https://earth.gsfc.nasa.gov")
+    st.markdown('<div class="service-card"><h3>🛰️ NASA EARTH</h3><p>Kosmosdan yerning real holati.</p></div>', unsafe_allow_html=True)
+    st.link_button("NASA tasvirlari", "https://earth.gsfc.nasa.gov")
 
 with col3:
-    st.markdown("""<div class="service-card">
-        <h3>🤖 GROK AI</h3>
-        <p>X-Grok orqali ekologik ma'lumotlarni chuqur tahlil qilish.</p>
-    </div>""", unsafe_allow_html=True)
-    st.link_button("AI Tahlilni boshlash", "https://grok.com")
+    st.markdown('<div class="service-card"><h3>🤖 GROK AI</h3><p>Ekologik ma’lumotlarni chuqur tahlil qilish.</p></div>', unsafe_allow_html=True)
+    # Grok uchun tayyor prompt bilan link
+    st.link_button("AI Tahlilni boshlash", "https://grok.com/?q=Analyze+the+latest+global+environmental+news+for+today")
 
 with col4:
-    st.markdown("""<div class="service-card">
-        <h3>🔥 DISASTER MAP</h3>
-        <p>Dunyo bo'ylab yong'in va tabiiy ofatlar monitoringi.</p>
-    </div>""", unsafe_allow_html=True)
-    st.link_button("Ofatlarni kuzatish", "https://firms.modaps.eosdis.nasa.gov/map/")
+    st.markdown('<div class="service-card"><h3>🔥 FIRE MAP</h3><p>Global yong‘inlar va ofatlar xaritasi.</p></div>', unsafe_allow_html=True)
+    st.link_button("Jonli xarita", "https://firms.modaps.eosdis.nasa.gov/map/")
 
 st.divider()
 
-# --- JONLI XARITA (Siz aytgan hayratlanarli qism) ---
-st.subheader("🌐 Global havo oqimlari (Live Wind & Weather)")
-# Bu qism saytingiz ichida jonli shamol xaritasini ko'rsatadi
-st.components.v1.iframe("https://earth.nullschool.net/#current/wind/surface/level/orthographic=-296.22,40.06,600", height=600)
+# --- YANGI HAYRATLANARLI QISM: JONLI SHAMOL VA OB-HAVO ---
+st.subheader("🌍 Real vaqtdagi Global Havo Oqimlari")
+st.markdown("Pastdagi xaritani sichqoncha bilan aylantirib, dunyoning istalgan nuqtasidagi havo holatini ko'rishingiz mumkin.")
+st.components.v1.iframe("https://earth.nullschool.net/#current/wind/surface/level/orthographic=-296.22,40.06,500", height=500)
 
 st.divider()
 
-# --- EKOLOGIK KALKULYATOR (Interaktiv xizmat) ---
-st.subheader("📊 Shaxsiy Eco-Kalkulyator")
-c1, c2 = st.columns(2)
-with c1:
-    km = st.number_input("Bir kunda necha km mashina haydaysiz?", 0, 500, 10)
-    meat = st.selectbox("Go'sht iste'moli darajasi", ["Kam", "O'rtacha", "Ko'p"])
-with c2:
-    carbon = (km * 0.12) + (10 if meat == "Ko'p" else 5)
-    st.metric("Sizning kunlik CO2 chiqindingiz (taxminan):", f"{carbon} kg")
-
-# Footer - SEO uchun
-st.markdown("""
----
-*Kalit so'zlar: Eco Portal, NASA Data Analysis, IQAir Uzbekistan, Global Climate Tracker, Grok AI Ecology*
+# --- SEO MATNLARI (Google uchun) ---
+st.subheader("Nega ECO-INSIGHT platformasidan foydalanish kerak?")
+st.write("""
+Bizning platformamiz O'zbekistonda birinchilardan bo'lib global ekologik ma'lumotlarni bitta oynada jamlaydi. 
+IQAir ma'lumotlari orqali havo ifloslanishini, NASA sun'iy yo'ldoshlari orqali iqlim o'zgarishini va 
+Grok AI orqali kelajakdagi ekologik prognozlarni kuzatish mumkin.
 """)
+
+st.markdown("---")
+st.caption("© 2026 ECO-INSIGHT Platformasi | Barcha huquqlar himoyalangan.")

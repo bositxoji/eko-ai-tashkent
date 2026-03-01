@@ -1,5 +1,5 @@
 import streamlit as st
-import datetime
+import datetime as dt
 import os
 import sqlite3
 import requests
@@ -8,7 +8,7 @@ from groq import Groq
 DB_PATH = "storage.db"
 
 # ----------------------------
-# CONFIG
+# UI CONFIG + STYLE
 # ----------------------------
 st.set_page_config(page_title="ECO AI WORLD | Enterprise", page_icon="🧬", layout="wide")
 
@@ -23,15 +23,13 @@ st.markdown("""
 .soft-card { background: #141821; padding: 16px; border-radius: 10px; border: 1px solid #1C1F26; margin-bottom: 14px; }
 .small-muted { color: #808080; font-size: 12px; }
 h1, h2, h3 { color: #FFFFFF !important; font-family: 'Inter', sans-serif; }
-.danger-text { color: #FF3B3B; font-weight: bold; animation: pulse 2s infinite; }
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 </style>
 """, unsafe_allow_html=True)
 
 # ----------------------------
-# UTIL
+# SAFE UTILS
 # ----------------------------
-def clamp(x: float, lo: float = 0, hi: float = 100) -> float:
+def clamp(x: float, lo: float = 0.0, hi: float = 100.0) -> float:
     return max(lo, min(hi, x))
 
 def risk_level(score: float) -> str:
@@ -41,8 +39,11 @@ def risk_level(score: float) -> str:
     if score >= 20: return "Past"
     return "Juda past"
 
+def now_utc_iso() -> str:
+    return dt.datetime.utcnow().replace(microsecond=0).isoformat()
+
 # ----------------------------
-# DB (AUTO INIT) — MUHIM
+# DB LAYER (auto init)
 # ----------------------------
 def db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -74,30 +75,60 @@ def init_db():
         UNIQUE(year, month, lang)
     );
     """)
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS meta (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+    );
+    """)
     conn.commit()
     conn.close()
 
-# DB ni app start bo‘lganda yaratib qo‘yamiz → “no such table” yo‘qoladi
-init_db()
-
-def get_latest_posts(limit=20):
+def meta_get(key: str):
     conn = db()
-    rows = conn.execute(
-        "SELECT id, created_at, section, title, summary, source, url, lang FROM posts ORDER BY created_at DESC LIMIT ?",
-        (limit,)
-    ).fetchall()
+    r = conn.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
+    conn.close()
+    return r["value"] if r else None
+
+def meta_set(key: str, value: str):
+    conn = db()
+    conn.execute("INSERT OR REPLACE INTO meta(key, value) VALUES(?,?)", (key, value))
+    conn.commit()
+    conn.close()
+
+def get_latest_posts(limit=20, lang=None):
+    conn = db()
+    if lang:
+        rows = conn.execute(
+            "SELECT id, created_at, section, title, summary, source, url, lang FROM posts WHERE lang=? ORDER BY created_at DESC LIMIT ?",
+            (lang, limit)
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT id, created_at, section, title, summary, source, url, lang FROM posts ORDER BY created_at DESC LIMIT ?",
+            (limit,)
+        ).fetchall()
     conn.close()
     return rows
 
-def search_posts(q, limit=50):
+def search_posts(q, limit=50, lang=None):
     conn = db()
-    rows = conn.execute(
-        """SELECT id, created_at, section, title, summary, source, url, lang
-           FROM posts
-           WHERE title LIKE ? OR summary LIKE ?
-           ORDER BY created_at DESC LIMIT ?""",
-        (f"%{q}%", f"%{q}%", limit)
-    ).fetchall()
+    if lang:
+        rows = conn.execute(
+            """SELECT id, created_at, section, title, summary, source, url, lang
+               FROM posts
+               WHERE lang=? AND (title LIKE ? OR summary LIKE ?)
+               ORDER BY created_at DESC LIMIT ?""",
+            (lang, f"%{q}%", f"%{q}%", limit)
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            """SELECT id, created_at, section, title, summary, source, url, lang
+               FROM posts
+               WHERE title LIKE ? OR summary LIKE ?
+               ORDER BY created_at DESC LIMIT ?""",
+            (f"%{q}%", f"%{q}%", limit)
+        ).fetchall()
     conn.close()
     return rows
 
@@ -110,8 +141,26 @@ def get_month_report(year: int, month: int, lang: str):
     conn.close()
     return r
 
+def post_exists(url: str, lang: str) -> bool:
+    conn = db()
+    r = conn.execute("SELECT 1 FROM posts WHERE url=? AND lang=? LIMIT 1", (url, lang)).fetchone()
+    conn.close()
+    return r is not None
+
+def save_post(section, title, summary, source, url, lang):
+    conn = db()
+    conn.execute(
+        "INSERT INTO posts(created_at, section, title, summary, source, url, lang) VALUES (?,?,?,?,?,?,?)",
+        (now_utc_iso(), section, title, summary, source, url, lang)
+    )
+    conn.commit()
+    conn.close()
+
+# init DB now (prevents "no such table")
+init_db()
+
 # ----------------------------
-# GROQ (SAFE)
+# GROQ (safe)
 # ----------------------------
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
@@ -143,6 +192,102 @@ def air_quality(lat: float, lon: float):
     return r.json()
 
 # ----------------------------
+# SELF-UPDATING ARCHIVE (NO CRON)
+# - 6 soatda bir marta RSS dan 3-4 ta item olib DBga yozadi
+# - AI bo'lsa: summary qiladi
+# - AI bo'lmasa: qisqa fallback summary
+# ----------------------------
+RSS_SOURCES = [
+    ("UN News - Climate", "https://news.un.org/feed/subscribe/en/news/topic/climate-change/feed/rss.xml"),
+    ("NASA Earth Observatory", "https://earthobservatory.nasa.gov/feeds/earth-observatory.rss"),
+    ("World Bank - Environment", "https://www.worldbank.org/en/topic/environment/rss"),
+]
+
+def simple_rss_extract(xml_text: str, limit: int = 4):
+    items = []
+    parts = xml_text.split("<item>")
+    for p in parts[1:limit+1]:
+        title = ""
+        link = ""
+        if "<title>" in p and "</title>" in p:
+            title = p.split("<title>")[1].split("</title>")[0].strip()
+        if "<link>" in p and "</link>" in p:
+            link = p.split("<link>")[1].split("</link>")[0].strip()
+        if title and link:
+            items.append((title, link))
+    return items
+
+def ai_summarize(title: str, url: str, lang: str):
+    # fallback
+    if client is None:
+        return ("Climate", f"{title}. Batafsil: {url}")
+
+    prompt = f"""
+Til: {lang}
+Sarlavha: {title}
+Manba: {url}
+
+2-3 gaplik ekologik summary yoz.
+Bo‘limni tanla: Air / Water / Climate / Disasters / Industry.
+Faqat shu formatda qaytar:
+SECTION: ...
+SUMMARY: ...
+"""
+    try:
+        res = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text = res.choices[0].message.content.strip()
+        section = "Climate"
+        summary = text[:280]
+        if "SECTION:" in text:
+            section = text.split("SECTION:")[1].splitlines()[0].strip() or "Climate"
+        if "SUMMARY:" in text:
+            summary = text.split("SUMMARY:")[1].strip()
+        return (section, summary)
+    except Exception:
+        return ("Climate", f"{title}. Batafsil: {url}")
+
+def refresh_archive_if_needed(lang: str, hours: int = 6):
+    """
+    Sayt ochilganda chaqiriladi.
+    Ekranga xato/traceback chiqarmaydi.
+    """
+    last = meta_get(f"last_update_{lang}")
+    do_refresh = True
+    if last:
+        try:
+            last_dt = dt.datetime.fromisoformat(last)
+            do_refresh = (dt.datetime.utcnow() - last_dt) > dt.timedelta(hours=hours)
+        except Exception:
+            do_refresh = True
+
+    if not do_refresh:
+        return
+
+    # yangilash (silent)
+    try:
+        for source_name, rss in RSS_SOURCES:
+            try:
+                r = requests.get(rss, timeout=25)
+                r.raise_for_status()
+                items = simple_rss_extract(r.text, limit=3)
+            except Exception:
+                continue
+
+            for title, url in items:
+                if post_exists(url, lang):
+                    continue
+                section, summary = ai_summarize(title, url, lang)
+                save_post(section, title, summary, source_name, url, lang)
+
+        meta_set(f"last_update_{lang}", now_utc_iso())
+    except Exception:
+        # butunlay jim: foydalanuvchiga sharmandali traceback yo‘q
+        return
+
+# ----------------------------
 # SIDEBAR
 # ----------------------------
 with st.sidebar:
@@ -159,21 +304,24 @@ with st.sidebar:
     st.divider()
     lang = st.selectbox("Til / Language", ["uz", "ru", "en", "tr"], index=0)
 
+    # Self-updating: sahifaga kirganda arxivni yangilab turadi (jim)
+    refresh_archive_if_needed(lang=lang, hours=6)
+
     page = st.radio("BO'LIMNI TANLANG:", [
         "1. Monitoring Terminal",
         "2. Real-Time Air Quality",
         "3. Industrial Eco Risk Scoring",
-        "4. News Feed (AI)",
-        "5. Archive",
-        "6. Monthly Report",
-        "7. 🧠 AI CORE",
-        "8. SILENT DISASTER"
+        "4. Archive",
+        "5. Monthly Report",
+        "6. 🧠 AI CORE",
+        "7. SILENT DISASTER"
     ])
+
     st.divider()
-    st.info(f"Bugun: {datetime.date.today()}")
+    st.info(f"Bugun: {dt.date.today()}")
 
 # ----------------------------
-# PAGES
+# PAGES (NO TRACEBACK: everything guarded)
 # ----------------------------
 if page == "1. Monitoring Terminal":
     st.title("📟 GLOBAL ECO MONITORING")
@@ -232,30 +380,18 @@ elif page == "3. Industrial Eco Risk Scoring":
     st.progress(risk/100)
     st.write("Baholash:", risk_level(risk))
 
-elif page == "4. News Feed (AI)":
-    st.title("📰 NEWS FEED (AI)")
-    st.markdown("<div class='main-card'>Bu bo‘limni Cron Job (worker.py) avtomatik to‘ldirib boradi.</div>", unsafe_allow_html=True)
-
-    rows = get_latest_posts(25)
-    if not rows:
-        st.info("Hali yangilik yo‘q. Cron Job ishga tushgach avtomatik paydo bo‘ladi.")
-    else:
-        for r in rows:
-            st.markdown(
-                f"<div class='soft-card'><b>{r['title']}</b><br>"
-                f"<span class='small-muted'>{r['created_at']} | {r['section']} | {r['source']} | {r['lang']}</span><br>"
-                f"{r['summary']}<br>"
-                f"<span class='small-muted'>{r['url']}</span></div>",
-                unsafe_allow_html=True
-            )
-
-elif page == "5. Archive":
+elif page == "4. Archive":
     st.title("🗂️ ARCHIVE")
+    st.markdown("<div class='main-card'>Arxiv o‘zi yangilanadi (Cron shart emas).</div>", unsafe_allow_html=True)
+
     q = st.text_input("Qidirish (title/summary):")
-    rows = search_posts(q) if q.strip() else get_latest_posts(30)
+    try:
+        rows = search_posts(q, lang=lang) if q.strip() else get_latest_posts(30, lang=lang)
+    except Exception:
+        rows = []
 
     if not rows:
-        st.info("Arxiv bo‘sh. Cron Job ishlaganda avtomatik to‘ldiriladi.")
+        st.info("Arxiv hozircha bo‘sh. Saytga yana kirilganda u o‘zi to‘lib boradi.")
     else:
         for r in rows:
             st.markdown(
@@ -266,25 +402,31 @@ elif page == "5. Archive":
                 unsafe_allow_html=True
             )
 
-elif page == "6. Monthly Report":
+elif page == "5. Monthly Report":
     st.title("📄 MONTHLY REPORT")
-    today = datetime.date.today()
+    st.markdown("<div class='main-card'>Hozircha report qo‘lda/AI bilan keyin avtomatlashtiramiz. (Free rejimda ham bo‘ladi)</div>", unsafe_allow_html=True)
+
+    today = dt.date.today()
     year = st.number_input("Year", value=today.year, step=1)
     month = st.number_input("Month (1-12)", value=today.month, step=1, min_value=1, max_value=12)
 
-    rep = get_month_report(int(year), int(month), lang)
+    try:
+        rep = get_month_report(int(year), int(month), lang)
+    except Exception:
+        rep = None
+
     if not rep:
-        st.info("Bu oy uchun report hali yo‘q. Cron Job har oyning 1-kuni yaratadi.")
+        st.info("Bu oy uchun report hali yo‘q.")
+        # xohlasangiz: “Generate report now” tugmasini keyingi bosqichda qo‘shamiz
     else:
-        st.markdown("<div class='main-card'><b>Report</b></div>", unsafe_allow_html=True)
         st.write(rep["content"])
         st.caption(f"Created at: {rep['created_at']}")
 
-elif page == "7. 🧠 AI CORE":
+elif page == "6. 🧠 AI CORE":
     st.title("🧠 AI CORE")
 
     if client is None:
-        st.info("AI hozir mavjud emas (serverda key sozlanmagan).")
+        st.info("AI hozir mavjud emas (serverda GROQ_API_KEY yo‘q).")
         st.stop()
 
     if "chat" not in st.session_state:
@@ -313,13 +455,17 @@ elif page == "7. 🧠 AI CORE":
         except Exception:
             st.error("AI xizmatida muammo. Keyinroq urinib ko‘ring.")
 
-elif page == "8. SILENT DISASTER":
+elif page == "7. SILENT DISASTER":
     st.title("🤫 SILENT DISASTER")
-    st.markdown("<div class='main-card'>Eng keskin ekologik voqealar (arxivdan).</div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-card'>Arxivdan eng keskin ekologik voqealar.</div>", unsafe_allow_html=True)
 
-    rows = get_latest_posts(10)
+    try:
+        rows = get_latest_posts(12, lang=lang)
+    except Exception:
+        rows = []
+
     if not rows:
-        st.info("Hali kontent yo‘q. Cron Job ishlaganda avtomatik to‘lib boradi.")
+        st.info("Hali kontent yo‘q. Saytga keyinroq kirganda avtomatik to‘lib boradi.")
     else:
         for r in rows[:6]:
             st.markdown(

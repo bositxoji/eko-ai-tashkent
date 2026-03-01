@@ -8,7 +8,7 @@ from groq import Groq
 DB_PATH = "storage.db"
 
 # ----------------------------
-# Page config + style
+# CONFIG
 # ----------------------------
 st.set_page_config(page_title="ECO AI WORLD | Enterprise", page_icon="🧬", layout="wide")
 
@@ -29,18 +29,56 @@ h1, h2, h3 { color: #FFFFFF !important; font-family: 'Inter', sans-serif; }
 """, unsafe_allow_html=True)
 
 # ----------------------------
-# Safe Groq client (no traceback)
+# UTIL
 # ----------------------------
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+def clamp(x: float, lo: float = 0, hi: float = 100) -> float:
+    return max(lo, min(hi, x))
+
+def risk_level(score: float) -> str:
+    if score >= 80: return "Juda yuqori"
+    if score >= 60: return "Yuqori"
+    if score >= 40: return "O‘rtacha"
+    if score >= 20: return "Past"
+    return "Juda past"
 
 # ----------------------------
-# DB helpers
+# DB (AUTO INIT) — MUHIM
 # ----------------------------
 def db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
+
+def init_db():
+    conn = db()
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        created_at TEXT NOT NULL,
+        section TEXT NOT NULL,
+        title TEXT NOT NULL,
+        summary TEXT NOT NULL,
+        source TEXT NOT NULL,
+        url TEXT NOT NULL,
+        lang TEXT NOT NULL
+    );
+    """)
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS reports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        year INTEGER NOT NULL,
+        month INTEGER NOT NULL,
+        lang TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        UNIQUE(year, month, lang)
+    );
+    """)
+    conn.commit()
+    conn.close()
+
+# DB ni app start bo‘lganda yaratib qo‘yamiz → “no such table” yo‘qoladi
+init_db()
 
 def get_latest_posts(limit=20):
     conn = db()
@@ -73,7 +111,13 @@ def get_month_report(year: int, month: int, lang: str):
     return r
 
 # ----------------------------
-# Air quality (Open-Meteo, key-free)
+# GROQ (SAFE)
+# ----------------------------
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+
+# ----------------------------
+# AIR QUALITY (Open-Meteo)
 # ----------------------------
 @st.cache_data(ttl=600)
 def geocode_city(city: str):
@@ -99,7 +143,7 @@ def air_quality(lat: float, lon: float):
     return r.json()
 
 # ----------------------------
-# Sidebar
+# SIDEBAR
 # ----------------------------
 with st.sidebar:
     st.markdown("<h1>💠 ECO AI WORLD</h1>", unsafe_allow_html=True)
@@ -116,23 +160,23 @@ with st.sidebar:
     lang = st.selectbox("Til / Language", ["uz", "ru", "en", "tr"], index=0)
 
     page = st.radio("BO'LIMNI TANLANG:", [
-        "1. Monitoring Terminal (Asosiy)",
-        "2. Real-Time Air Quality (API)",
-        "3. Industrial Eco Risk Scoring (Sanoat)",
-        "4. Archive (Arxiv)",
-        "5. Monthly Report (Oylik)",
-        "6. 🧠 AI CORE (Llama 3.3)",
-        "7. SILENT DISASTER (Dynamic)"
+        "1. Monitoring Terminal",
+        "2. Real-Time Air Quality",
+        "3. Industrial Eco Risk Scoring",
+        "4. News Feed (AI)",
+        "5. Archive",
+        "6. Monthly Report",
+        "7. 🧠 AI CORE",
+        "8. SILENT DISASTER"
     ])
     st.divider()
     st.info(f"Bugun: {datetime.date.today()}")
 
 # ----------------------------
-# Pages
+# PAGES
 # ----------------------------
-if page == "1. Monitoring Terminal (Asosiy)":
+if page == "1. Monitoring Terminal":
     st.title("📟 GLOBAL ECO MONITORING")
-    st.markdown("<div class='main-card'>Global monitoring manbalari va jonli xaritalar.</div>", unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
     with col1: st.link_button("💨 IQAIR", "https://www.iqair.com/")
     with col2: st.link_button("🚀 NASA FIRMS", "https://firms.modaps.eosdis.nasa.gov/map/")
@@ -140,28 +184,29 @@ if page == "1. Monitoring Terminal (Asosiy)":
     with col4: st.link_button("🌤️ Open-Meteo", "https://open-meteo.com/")
     st.components.v1.iframe("https://earth.nullschool.net/#current/wind/surface/level/orthographic=-296.22,40.06,500", height=600)
 
-elif page == "2. Real-Time Air Quality (API)":
-    st.title("💨 REAL-TIME AIR QUALITY (API)")
-    st.markdown("<div class='main-card'>Open-Meteo orqali real-time havo sifati. 401 bo‘lmaydi.</div>", unsafe_allow_html=True)
+elif page == "2. Real-Time Air Quality":
+    st.title("💨 REAL-TIME AIR QUALITY")
+    st.markdown("<div class='main-card'>Shahar kiriting va real vaqtga yaqin havo sifatini ko‘ring.</div>", unsafe_allow_html=True)
 
     city = st.text_input("Shahar:", "Tashkent")
     if st.button("Yangilash"):
         try:
             geo = geocode_city(city.strip())
             if not geo:
-                st.warning("Shahar topilmadi.")
+                st.warning("Shahar topilmadi. Boshqa nom bilan urinib ko‘ring.")
             else:
                 aq = air_quality(geo["lat"], geo["lon"])
                 cur = aq.get("current", {})
                 st.write(f"📍 {geo['name']}, {geo.get('country','')}")
-                c1, c2, c3 = st.columns(3)
-                with c1: st.metric("PM2.5 (µg/m³)", f"{cur.get('pm2_5', 0):.1f}")
-                with c2: st.metric("PM10 (µg/m³)", f"{cur.get('pm10', 0):.1f}")
-                with c3: st.metric("NO₂ (µg/m³)", f"{cur.get('nitrogen_dioxide', 0):.1f}")
+                c1, c2, c3, c4 = st.columns(4)
+                with c1: st.metric("PM2.5", f"{float(cur.get('pm2_5', 0)):.1f} µg/m³")
+                with c2: st.metric("PM10", f"{float(cur.get('pm10', 0)):.1f} µg/m³")
+                with c3: st.metric("NO₂", f"{float(cur.get('nitrogen_dioxide', 0)):.1f} µg/m³")
+                with c4: st.metric("O₃", f"{float(cur.get('ozone', 0)):.1f} µg/m³")
         except Exception:
             st.error("Air Quality API vaqtincha ishlamayapti. Keyinroq urinib ko‘ring.")
 
-elif page == "3. Industrial Eco Risk Scoring (Sanoat)":
+elif page == "3. Industrial Eco Risk Scoring":
     st.title("🏭 INDUSTRIAL ECO RISK SCORING")
     st.markdown("<div class='main-card'>Sanoat obyektlari uchun risk scoring.</div>", unsafe_allow_html=True)
 
@@ -181,19 +226,19 @@ elif page == "3. Industrial Eco Risk Scoring (Sanoat)":
 
     base = {"Neft/gaz": 15, "Kimyo": 18, "Metallurgiya": 16, "Tekstil": 10, "Oziq-ovqat": 8, "Energetika": 14, "Boshqa": 12}[industry]
     risk = base + production*3 + incidents*2.5 + air*4 + water*4 + waste*3 + community*2 - compliance*3.5 - controls*3.5
-    risk = max(0, min(100, risk))
+    risk = clamp(risk, 0, 100)
 
     st.metric("Industrial Eco Risk (0–100)", int(round(risk)))
     st.progress(risk/100)
     st.write("Baholash:", risk_level(risk))
 
-elif page == "4. Archive (Arxiv)":
-    st.title("🗂️ ARCHIVE")
-    q = st.text_input("Qidirish (title/summary):")
-    rows = search_posts(q) if q.strip() else get_latest_posts(30)
+elif page == "4. News Feed (AI)":
+    st.title("📰 NEWS FEED (AI)")
+    st.markdown("<div class='main-card'>Bu bo‘limni Cron Job (worker.py) avtomatik to‘ldirib boradi.</div>", unsafe_allow_html=True)
 
+    rows = get_latest_posts(25)
     if not rows:
-        st.info("Arxiv bo‘sh. Cron job ishlaganda avtomatik to‘ldiriladi.")
+        st.info("Hali yangilik yo‘q. Cron Job ishga tushgach avtomatik paydo bo‘ladi.")
     else:
         for r in rows:
             st.markdown(
@@ -204,7 +249,24 @@ elif page == "4. Archive (Arxiv)":
                 unsafe_allow_html=True
             )
 
-elif page == "5. Monthly Report (Oylik)":
+elif page == "5. Archive":
+    st.title("🗂️ ARCHIVE")
+    q = st.text_input("Qidirish (title/summary):")
+    rows = search_posts(q) if q.strip() else get_latest_posts(30)
+
+    if not rows:
+        st.info("Arxiv bo‘sh. Cron Job ishlaganda avtomatik to‘ldiriladi.")
+    else:
+        for r in rows:
+            st.markdown(
+                f"<div class='soft-card'><b>{r['title']}</b><br>"
+                f"<span class='small-muted'>{r['created_at']} | {r['section']} | {r['source']} | {r['lang']}</span><br>"
+                f"{r['summary']}<br>"
+                f"<span class='small-muted'>{r['url']}</span></div>",
+                unsafe_allow_html=True
+            )
+
+elif page == "6. Monthly Report":
     st.title("📄 MONTHLY REPORT")
     today = datetime.date.today()
     year = st.number_input("Year", value=today.year, step=1)
@@ -212,24 +274,27 @@ elif page == "5. Monthly Report (Oylik)":
 
     rep = get_month_report(int(year), int(month), lang)
     if not rep:
-        st.info("Bu oy uchun report yo‘q. Cron job har oyning 1-kuni yaratadi.")
+        st.info("Bu oy uchun report hali yo‘q. Cron Job har oyning 1-kuni yaratadi.")
     else:
         st.markdown("<div class='main-card'><b>Report</b></div>", unsafe_allow_html=True)
         st.write(rep["content"])
         st.caption(f"Created at: {rep['created_at']}")
 
-elif page == "6. 🧠 AI CORE (Llama 3.3)":
+elif page == "7. 🧠 AI CORE":
     st.title("🧠 AI CORE")
 
     if client is None:
-        st.markdown("<div class='soft-card'><b>AI vaqtincha o‘chiq</b><div class='small-muted'>Render ENV’da GROQ_API_KEY bo‘lsa ishlaydi.</div></div>", unsafe_allow_html=True)
+        st.info("AI hozir mavjud emas (serverda key sozlanmagan).")
         st.stop()
 
     if "chat" not in st.session_state:
         st.session_state.chat = []
 
     for msg in st.session_state.chat:
-        st.markdown(f"<div class='soft-card'><b>{'🧑 Siz' if msg['role']=='user' else '🤖 AI'}:</b><br>{msg['content']}</div>", unsafe_allow_html=True)
+        st.markdown(
+            f"<div class='soft-card'><b>{'🧑 Siz' if msg['role']=='user' else '🤖 AI'}:</b><br>{msg['content']}</div>",
+            unsafe_allow_html=True
+        )
 
     q = st.text_input("Savol:", placeholder="Ekologiya bo‘yicha savol bering...")
     if st.button("Yuborish") and q.strip():
@@ -248,15 +313,15 @@ elif page == "6. 🧠 AI CORE (Llama 3.3)":
         except Exception:
             st.error("AI xizmatida muammo. Keyinroq urinib ko‘ring.")
 
-elif page == "7. SILENT DISASTER (Dynamic)":
-    st.title("🤫 SILENT DISASTER (Dynamic)")
-    st.markdown("<div class='main-card'>Bu bo‘lim endi arxivdan avtomatik yangilanadi.</div>", unsafe_allow_html=True)
+elif page == "8. SILENT DISASTER":
+    st.title("🤫 SILENT DISASTER")
+    st.markdown("<div class='main-card'>Eng keskin ekologik voqealar (arxivdan).</div>", unsafe_allow_html=True)
 
     rows = get_latest_posts(10)
     if not rows:
-        st.info("Hali kontent yo‘q. Cron job ishlaganda bu bo‘lim avtomatik to‘lib boradi.")
+        st.info("Hali kontent yo‘q. Cron Job ishlaganda avtomatik to‘lib boradi.")
     else:
-        for r in rows[:5]:
+        for r in rows[:6]:
             st.markdown(
                 f"<div class='soft-card'><b>{r['title']}</b><br>"
                 f"<span class='small-muted'>{r['created_at']} | {r['section']}</span><br>"
